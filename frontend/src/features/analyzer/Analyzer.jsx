@@ -14,6 +14,26 @@ export default function Analyzer({ token }) {
   const [loading, setLoading] = useState(false);
   const [progress, setProgress] = useState(0);
 
+  // PERSISTENCE: Load saved result on mount
+  useEffect(() => {
+    const savedResult = sessionStorage.getItem('active_analysis');
+    if (savedResult && savedResult !== "undefined") {
+      try {
+        setResult(JSON.parse(savedResult));
+      } catch (e) {
+        console.error("Neural State Corruption. Purging session...");
+        sessionStorage.removeItem('active_analysis');
+      }
+    }
+  }, []);
+
+  // PERSISTENCE: Save result when it updates
+  useEffect(() => {
+    if (result) {
+      sessionStorage.setItem('active_analysis', JSON.stringify(result));
+    }
+  }, [result]);
+
   const handleAnalyze = async () => {
     if (!file) return;
     const activeToken = localStorage.getItem('token'); // DIRECT FETCH FOR FRESHNESS
@@ -26,6 +46,7 @@ export default function Analyzer({ token }) {
 
     setLoading(true);
     setResult(null);
+    sessionStorage.removeItem('active_analysis');
     setProgress(0);
     
     const interval = setInterval(() => {
@@ -164,7 +185,20 @@ export default function Analyzer({ token }) {
                 </div>
                 
                 <div style={{flex: 1}}>
-                  <h1 style={{fontSize: '28px', fontWeight: 'bold', marginBottom: '8px', letterSpacing: '1px', color: '#fff'}}>ANALYSIS COMPLETE</h1>
+                  <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start'}}>
+                    <h1 style={{fontSize: '28px', fontWeight: 'bold', marginBottom: '8px', letterSpacing: '1px', color: '#fff'}}>ANALYSIS COMPLETE</h1>
+                    {result.modelSource && (
+                      <div className="glass-card" style={{
+                        padding: '4px 12px', fontSize: '10px', borderRadius: '20px', 
+                        background: result.modelSource.includes('Mistral') ? 'rgba(0, 229, 255, 0.1)' : 'rgba(255, 23, 68, 0.1)',
+                        color: result.modelSource.includes('Mistral') ? 'var(--primary)' : 'var(--secondary)',
+                        border: `1px solid ${result.modelSource.includes('Mistral') ? 'rgba(0, 229, 255, 0.3)' : 'rgba(255, 23, 68, 0.3)'}`,
+                        display: 'flex', alignItems: 'center', gap: '6px', fontWeight: 'bold'
+                      }}>
+                        <Activity size={12} /> {result.modelSource.toUpperCase()}
+                      </div>
+                    )}
+                  </div>
                   <p style={{fontSize: '16px', color: 'var(--text-muted)', lineHeight: '1.6'}}>
                     {result.recommendation || "System alignment synchronized with target market nodes."}
                   </p>

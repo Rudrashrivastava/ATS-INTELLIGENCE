@@ -43,4 +43,6 @@ public class AnalysisResult {
 
     @Column(columnDefinition = "LONGTEXT")
     private String weaknesses;
+
+    private String modelSource; // NEW: Tracks if Mistral or Groq was used
 }

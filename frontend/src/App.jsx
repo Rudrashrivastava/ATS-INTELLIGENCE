@@ -11,6 +11,7 @@ import { ProtectedRoute, PublicRoute } from './components/RouteGuards';
 import { LogOut, LayoutDashboard, Search, Zap, Activity } from 'lucide-react';
 
 import { useAuth } from './features/auth/hooks/useAuth';
+import { AuthProvider } from './context/AuthContext';
 
 // Wrapper to handle location-based logic
 function AppContent() {
@@ -58,7 +59,7 @@ function AppContent() {
             <div style={{display: 'flex', alignItems: 'center', gap: '20px'}}>
               <div style={{textAlign: 'right'}}>
                 <div style={{fontSize: '14px', fontWeight: 'bold', color: '#fff', textTransform: 'uppercase'}}>
-                  {user?.name || 'OPERATOR'}
+                  {user?.name || user?.email?.split('@')[0] || 'OPERATOR'}
                 </div>
                 <div style={{fontSize: '9px', color: '#00E5FF', letterSpacing: '2px'}}>NEURAL IDENTITY</div>
               </div>
@@ -129,9 +130,11 @@ function AppContent() {
 
 function App() {
   return (
-    <Router>
-      <AppContent />
-    </Router>
+    <AuthProvider>
+      <Router>
+        <AppContent />
+      </Router>
+    </AuthProvider>
   );
 }
 

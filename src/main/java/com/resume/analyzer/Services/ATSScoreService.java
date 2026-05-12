@@ -35,31 +35,41 @@ public class ATSScoreService {
     @Value("${groq.base-url}")
     private String groqUrl;
 
+    @Value("${groq.model}")
+    private String groqModel;
+
     public ATSScore calculateScore(String resumeText, String jobDescription) {
         // PRIMARY: Mistral Core
         try {
             log.info("Initiating Mistral Core Analysis...");
-            return callAgent(mistralUrl + "/v1/chat/completions", mistralKey, mistralModel, resumeText, jobDescription);
+            ATSScore result = callAgent(mistralUrl + "/v1/chat/completions", mistralKey, mistralModel, resumeText, jobDescription);
+            result.setModelSource("Mistral Core");
+            return result;
         } catch (Exception e) {
             log.warn("Mistral Node Unstable. Activating Groq Bridge...");
             // SECONDARY: Groq Reliable Fallback
             try {
-                return callAgent(groqUrl, groqKey, "llama-3.1-8b-instant", resumeText, jobDescription);
+                ATSScore result = callAgent(groqUrl, groqKey, groqModel, resumeText, jobDescription);
+                result.setModelSource("Groq Bridge");
+                return result;
             } catch (Exception ex) {
                 log.error("Neural Shield Depleted: Both agents failed.");
-                return fallbackScore();
+                ATSScore fallback = fallbackScore();
+                fallback.setModelSource("Emergency Fallback");
+                return fallback;
             }
         }
     }
 
     private ATSScore callAgent(String url, String key, String model, String resumeText, String jobDescription) throws Exception {
+        long startTime = System.currentTimeMillis();
         String prompt = "Act as an advanced ATS Intelligence Agent. Analyze this resume against the job description.\n" +
                 "RESUME: " + resumeText + "\n" +
                 "JOB: " + jobDescription + "\n\n" +
                 "Return ONLY a raw JSON object with these EXACT keys:\n" +
                 "score (0-100 integer), recommendation (2-3 sentences), strengths (array of 4 strings), " +
                 "weaknesses (array of 4 strings), categoryScores (object with: Skills, Formatting, Keywords, Experience as integers), " +
-                "marketSearchQuery (concise 2-3 word job title), trajectory (array of 6 strings), " +
+                "marketSearchQuery (a highly specific 3-5 word employment search query. CRITICAL: DO NOT use words like 'training', 'tutorial', 'course', or 'certification'. ONLY use employment terms like 'job', 'internship', 'associate', 'hiring', or 'vacancy' that fits the resume profile), trajectory (array of 6 strings), " +
                 "opportunities (array of objects: {title, desc}), resources (array of objects: {name, url}).\n" +
                 "CRITICAL: NO MARKDOWN. NO CONVERSATION. ONLY JSON.";
 
@@ -73,19 +83,27 @@ public class ATSScoreService {
         body.put("temperature", 0.1);
 
         HttpEntity<Map<String, Object>> entity = new HttpEntity<>(body, headers);
-        ResponseEntity<String> response = restTemplate.postForEntity(url, entity, String.class);
-        
-        return parseResponse(response.getBody());
+        try {
+            ResponseEntity<String> response = restTemplate.postForEntity(url, entity, String.class);
+            log.info("Agent [{}] response received in {}ms", model, (System.currentTimeMillis() - startTime));
+            return parseResponse(response.getBody());
+        } catch (Exception e) {
+            log.error("Agent [{}] failure after {}ms: {}", model, (System.currentTimeMillis() - startTime), e.getMessage());
+            throw e;
+        }
     }
 
     private ATSScore parseResponse(String responseBody) throws Exception {
         JsonNode root = objectMapper.readTree(responseBody);
         String content = root.path("choices").get(0).path("message").path("content").asText();
         
+        // Robust JSON extraction (removes potential markdown or prefix text)
         int start = content.indexOf("{");
         int end = content.lastIndexOf("}");
         if (start != -1 && end != -1) {
             content = content.substring(start, end + 1);
+        } else {
+            log.warn("Agent returned non-JSON content. Attempting raw parse...");
         }
         
         JsonNode data = objectMapper.readTree(content);

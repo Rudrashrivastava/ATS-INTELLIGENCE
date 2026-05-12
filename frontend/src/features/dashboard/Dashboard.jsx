@@ -6,12 +6,14 @@ import {
   TrendingDown, TrendingUp, MessageSquare, X, Zap
 } from 'lucide-react';
 import ChatInterface from './ChatInterface';
+import { useAuth } from '../auth/hooks/useAuth';
 
 export default function Dashboard() {
+  const { user: authUser, loading: authLoading } = useAuth();
   const navigate = useNavigate();
   const [history, setHistory] = useState([]);
   const [globalEcosystem, setGlobalEcosystem] = useState([]);
-  const [userName, setUserName] = useState('User');
+  const [userName, setUserName] = useState(authUser?.name || authUser?.email?.split('@')[0] || 'User');
   const [isChatOpen, setIsChatOpen] = useState(false);
   
   const [stats, setStats] = useState({
@@ -29,6 +31,9 @@ export default function Dashboard() {
       const token = localStorage.getItem('token');
       if (!token) return;
 
+      // Sync name from Auth Hook if available immediately
+      if (authUser?.name) setUserName(authUser.name);
+
       // 2. FETCH INTEGRATED DATA PIPELINES (Personal + Global)
       Promise.all([
         axios.get('/api/user/me', { headers: { Authorization: `Bearer ${token}` } }),
@@ -36,7 +41,7 @@ export default function Dashboard() {
         axios.get('/api/resume/global-ecosystem', { headers: { Authorization: `Bearer ${token}` } }),
         axios.get('/api/resume/global-stats', { headers: { Authorization: `Bearer ${token}` } })
       ]).then(([userRes, historyRes, ecosystemRes, statsRes]) => {
-        setUserName(userRes.data?.name || 'Rudra');
+        setUserName(userRes.data?.name || authUser?.name || 'User');
         setHistory(historyRes.data || []);
         setGlobalEcosystem(ecosystemRes.data || []);
         
@@ -59,6 +64,13 @@ export default function Dashboard() {
     };
     fetchDashboardData();
   }, []);
+
+  // Sync name from Auth Hook whenever it updates
+  useEffect(() => {
+    if (authUser) {
+      setUserName(authUser.name || authUser.email?.split('@')[0] || 'User');
+    }
+  }, [authUser]);
 
   // Trend Calculation (Depends on History state)
   useEffect(() => {
@@ -203,8 +215,10 @@ export default function Dashboard() {
                     <div style={{fontSize: '11px', color: 'var(--text-muted)'}}>{getTimeAgo(node.analysisDate)}</div>
                  </div>
                  <div style={{textAlign: 'right'}}>
-                    <div style={{fontSize: '22px', fontWeight: 'bold', color: 'var(--secondary)'}}>{node.overallScore || 0}%</div>
-                    <div style={{fontSize: '10px', color: 'var(--text-muted)'}}>MATCH</div>
+                    <div style={{fontSize: '14px', fontWeight: 'bold', color: '#fff', textTransform: 'uppercase'}}>
+                      {authUser?.name || authUser?.email?.split('@')[0] || 'OPERATOR'}
+                    </div>
+                    <div style={{fontSize: '10px', color: 'var(--text-muted)'}}>MATCH: {node.overallScore || 0}%</div>
                  </div>
               </div>
             )) : (

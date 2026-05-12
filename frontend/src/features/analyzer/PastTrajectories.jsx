@@ -15,7 +15,7 @@ export default function PastTrajectories() {
   useEffect(() => {
     const fetchHistory = async () => {
       try {
-        const res = await axios.get('/api/resume/history', {
+        const res = await axios.get('/api/resume/all-history', {
           headers: { Authorization: `Bearer ${token}` }
         });
         setHistory(res.data || []);
