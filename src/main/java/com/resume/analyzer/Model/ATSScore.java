@@ -18,4 +18,5 @@ public class ATSScore {
     private List<String> trajectory; // Step-by-step career evolution
     private List<Map<String, String>> opportunities; // Job alignment roadmap
     private List<Map<String, String>> resources; // NEW: Study resources (name, url)
+    private String modelSource; // Tracks which AI engine was used
 }

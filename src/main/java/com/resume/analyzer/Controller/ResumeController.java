@@ -57,6 +57,7 @@ public class ResumeController {
                     .trajectoryJson(objectMapper.writeValueAsString(score.getTrajectory()))
                     .opportunitiesJson(objectMapper.writeValueAsString(score.getOpportunities()))
                     .resourcesJson(objectMapper.writeValueAsString(score.getResources()))
+                    .modelSource(score.getModelSource())
                     .build();
 
             return ResponseEntity.ok(analysisResultRepository.save(result));

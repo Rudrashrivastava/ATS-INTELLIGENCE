@@ -25,6 +25,7 @@ public class ChatController {
         
         Map<String, String> result = new HashMap<>();
         result.put("response", response);
+        result.put("model", "Groq Neural Engine");
         return ResponseEntity.ok(result);
     }
 }

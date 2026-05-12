@@ -54,7 +54,8 @@ export default function ChatInterface({ onClose, token }) {
       const botMessage = { 
         id: Date.now() + 1, 
         text: response.data.response, 
-        isBot: true 
+        isBot: true,
+        model: response.data.model 
       };
       setMessages(prev => [...prev, botMessage]);
     } catch (err) {
@@ -115,7 +116,16 @@ export default function ChatInterface({ onClose, token }) {
               fontSize: '13px', lineHeight: '1.5',
               border: msg.isBot ? '1px solid rgba(255,255,255,0.1)' : 'none'
             }}>
-              {msg.text}
+              <div style={{whiteSpace: 'pre-wrap'}}>{msg.text}</div>
+              {msg.model && (
+                <div style={{
+                  marginTop: '8px', fontSize: '9px', fontWeight: 'bold', 
+                  opacity: 0.6, display: 'flex', alignItems: 'center', gap: '4px',
+                  color: 'var(--primary)', letterSpacing: '0.5px'
+                }}>
+                   <Activity size={10} /> {msg.model.toUpperCase()}
+                </div>
+              )}
             </div>
           </div>
         ))}

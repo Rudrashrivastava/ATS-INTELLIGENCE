@@ -46,6 +46,9 @@ public class ApplicationConfig {
 
     @Bean
     public RestTemplate restTemplate() {
-        return new RestTemplate();
+        org.springframework.http.client.SimpleClientHttpRequestFactory factory = new org.springframework.http.client.SimpleClientHttpRequestFactory();
+        factory.setConnectTimeout(5000);
+        factory.setReadTimeout(15000); // 15s max for AI agents
+        return new RestTemplate(factory);
     }
 }

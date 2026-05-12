@@ -5,7 +5,7 @@ import { useAuth } from './hooks/useAuth';
 
 export default function Auth() {
   const navigate = useNavigate();
-  const { handleLogin, handleRegister, error, setError, success, setSuccess, loading } = useAuth();
+  const { login, register, error, setError, success, setSuccess, loading } = useAuth();
   const [isLogin, setIsLogin] = useState(true);
   const [formData, setFormData] = useState({ name: '', email: '', password: '' });
 
@@ -15,12 +15,12 @@ export default function Auth() {
     setSuccess('');
 
     if (isLogin) {
-      const ok = await handleLogin({ email: formData.email, password: formData.password });
+      const ok = await login({ email: formData.email, password: formData.password });
       if (ok) {
         navigate('/', { replace: true });
       }
     } else {
-      const ok = await handleRegister(formData);
+      const ok = await register(formData);
       if (ok) {
         setIsLogin(true);
         setFormData({ name: '', email: '', password: '' });

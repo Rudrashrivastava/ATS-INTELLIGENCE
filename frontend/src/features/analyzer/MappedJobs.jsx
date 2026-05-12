@@ -25,6 +25,10 @@ export default function MappedJobs() {
         // Zenserp returns results in 'jobs_results' or 'organic'
         const results = res.data.jobs_results || res.data.organic || [];
         setJobs(results);
+        
+        if (res.data.status === "Neural-Agent-Active") {
+          console.warn("Zenserp Delayed. Neural Mapping Agent active.");
+        }
       } catch (err) {
         console.error("Zenserp Sync Failure:", err);
         const backendError = err.response?.data?.details || err.response?.data?.error || "Neural Link Timeout";
@@ -54,7 +58,17 @@ export default function MappedJobs() {
         </button>
         <div>
           <h1 style={{fontSize: '32px', fontWeight: 'bold', color: '#fff'}}>Market Match Core</h1>
-          <p style={{color: 'var(--text-muted)'}}>Synchronizing [ {query.toUpperCase()} ] profile with live global nodes.</p>
+          <div style={{display: 'flex', alignItems: 'center', gap: '10px'}}>
+            <p style={{color: 'var(--text-muted)', margin: 0}}>Synchronizing [ {query.toUpperCase()} ] profile with live global nodes.</p>
+            {jobs.length > 0 && !loading && (
+               <div style={{
+                 padding: '2px 8px', borderRadius: '4px', fontSize: '10px', fontWeight: 'bold',
+                 background: 'rgba(0, 229, 255, 0.1)', color: 'var(--primary)', border: '1px solid rgba(0, 229, 255, 0.2)'
+               }}>
+                 AGENT ACTIVE
+               </div>
+            )}
+          </div>
         </div>
       </div>
 
