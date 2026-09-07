@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import axios from 'axios';
-import { ArrowLeft, Globe, Activity, ShieldCheck, Users, Filter, Search } from 'lucide-react';
+import { ArrowLeft, Globe, Activity, ShieldCheck, Users, Filter, Search, Mail } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
 export default function GlobalEcosystem() {
@@ -190,7 +190,7 @@ export default function GlobalEcosystem() {
       ) : (
         <div className="glass-card" style={{padding: 0, overflow: 'hidden', border: '1px solid rgba(255,255,255,0.05)'}}>
           <div style={{
-            display: 'grid', gridTemplateColumns: '80px 2fr 2fr 1fr 1fr', 
+            display: 'grid', gridTemplateColumns: '80px 2fr 2fr 1fr 1fr 120px', 
             padding: '24px 32px', background: 'rgba(255,255,255,0.03)', 
             borderBottom: '1px solid rgba(255,255,255,0.05)',
             fontSize: '11px', color: 'var(--primary)', fontWeight: 'bold', letterSpacing: '1px'
@@ -200,12 +200,13 @@ export default function GlobalEcosystem() {
             <span>IDENTIFIED ROLE</span>
             <span>MATCH SCORE</span>
             <span>SYNC TIME</span>
+            <span>OUTREACH</span>
           </div>
 
           <div style={{maxHeight: '65vh', overflowY: 'auto'}}>
             {filteredHistory.length > 0 ? filteredHistory.map((item, idx) => (
               <div key={idx} style={{
-                display: 'grid', gridTemplateColumns: '80px 2fr 2fr 1fr 1fr', 
+                display: 'grid', gridTemplateColumns: '80px 2fr 2fr 1fr 1fr 120px', 
                 padding: '20px 32px', borderBottom: '1px solid rgba(255,255,255,0.03)',
                 alignItems: 'center', background: idx % 2 === 0 ? 'transparent' : 'rgba(255,255,255,0.01)'
               }}>
@@ -223,6 +224,21 @@ export default function GlobalEcosystem() {
                 </div>
                 <div style={{fontSize: '11px', color: 'var(--text-muted)'}}>
                   {getRelativeTime(item.analysisDate)}
+                </div>
+                <div>
+                  <button 
+                    onClick={() => navigate('/contact-candidate', { state: { candidate: item.user || { name: item.user?.name || 'Candidate' }, role: item.primaryRole, score: item.overallScore } })}
+                    className="glass-card hover-lift"
+                    style={{
+                      padding: '8px 14px', background: 'rgba(0, 229, 255, 0.08)',
+                      border: '1px solid rgba(0, 229, 255, 0.3)', color: '#00E5FF',
+                      borderRadius: '8px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px',
+                      fontSize: '11px', fontWeight: 'bold'
+                    }}
+                    title="Contact Candidate"
+                  >
+                    <Mail size={14} /> HR EMAIL
+                  </button>
                 </div>
               </div>
             )) : (

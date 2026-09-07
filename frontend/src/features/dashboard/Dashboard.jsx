@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { 
   Activity, Cpu, Database, Globe, ArrowRight, 
-  TrendingDown, TrendingUp, MessageSquare, X, Zap
+  TrendingDown, TrendingUp, MessageSquare, X, Zap, Mail
 } from 'lucide-react';
 import ChatInterface from './ChatInterface';
 import { useAuth } from '../auth/hooks/useAuth';
@@ -214,11 +214,26 @@ export default function Dashboard() {
                     <div style={{fontSize: '12px', color: 'var(--primary)', marginBottom: '4px'}}>{node.primaryRole || 'Career Strategist'}</div>
                     <div style={{fontSize: '11px', color: 'var(--text-muted)'}}>{getTimeAgo(node.analysisDate)}</div>
                  </div>
-                 <div style={{textAlign: 'right'}}>
-                    <div style={{fontSize: '14px', fontWeight: 'bold', color: '#fff', textTransform: 'uppercase'}}>
-                      {authUser?.name || authUser?.email?.split('@')[0] || 'OPERATOR'}
+                 <div style={{display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '6px'}}>
+                    <div style={{fontSize: '11px', fontWeight: 'bold', color: 'var(--primary)'}}>
+                      MATCH: {node.overallScore || 0}%
                     </div>
-                    <div style={{fontSize: '10px', color: 'var(--text-muted)'}}>MATCH: {node.overallScore || 0}%</div>
+                    <button 
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        navigate('/contact-candidate', { state: { candidate: node.user || { name: node.user?.name || 'Candidate' }, role: node.primaryRole, score: node.overallScore } });
+                      }}
+                      className="glass-card hover-lift"
+                      style={{
+                        padding: '6px 12px', background: 'rgba(0, 229, 255, 0.1)',
+                        border: '1px solid rgba(0, 229, 255, 0.3)', color: '#00E5FF',
+                        borderRadius: '6px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '4px',
+                        fontSize: '10px', fontWeight: 'bold'
+                      }}
+                      title="Contact Candidate"
+                    >
+                      <Mail size={12} /> HR EMAIL
+                    </button>
                  </div>
               </div>
             )) : (

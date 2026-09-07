@@ -7,6 +7,7 @@ import Dashboard from './features/dashboard/Dashboard';
 import CareerDetail from './features/analyzer/CareerDetail';
 import GlobalEcosystem from './features/dashboard/GlobalEcosystem';
 import MappedJobs from './features/analyzer/MappedJobs';
+import ContactCandidate from './features/recruiter/ContactCandidate';
 import { ProtectedRoute, PublicRoute } from './components/RouteGuards';
 import { LogOut, LayoutDashboard, Search, Zap, Activity } from 'lucide-react';
 
@@ -102,6 +103,7 @@ function AppContent() {
               <Route path="/details" element={<ProtectedRoute><CareerDetail token={authToken} /></ProtectedRoute>} />
               <Route path="/usersuse" element={<ProtectedRoute><GlobalEcosystem token={authToken} /></ProtectedRoute>} />
               <Route path="/mapped-jobs" element={<ProtectedRoute><MappedJobs token={authToken} /></ProtectedRoute>} />
+              <Route path="/contact-candidate" element={<ProtectedRoute><ContactCandidate token={authToken} /></ProtectedRoute>} />
               <Route path="*" element={<Navigate to="/" replace />} />
             </Routes>
           )}

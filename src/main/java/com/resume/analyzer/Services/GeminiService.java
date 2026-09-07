@@ -24,26 +24,27 @@ public class GeminiService { // Name kept for compatibility, logic is GROQ
     @Value("${groq.base-url:https://api.groq.com/openai/v1/chat/completions}")
     private String baseUrl;
 
-    @Value("${groq.model:groq/compound-mini}")
+    @Value("${groq.model:llama-3.3-70b-versatile}")
     private String model;
 
     public String getChatResponse(String userQuery, Map<String, Object> context) {
         try {
             // SYSTEM PROMPT: Project Manual + Resume Context
-            String systemPrompt = "You are the ATS Intelligence Assistant. " +
+            StringBuilder systemPrompt = new StringBuilder("You are the ATS Intelligence Assistant. " +
                     "PROJECT MANUAL: " +
                     "1. ANALYZER: Upload a PDF resume to get an AI score and roadmap. " +
                     "2. DASHBOARD: View your history, global stats, and career trajectories. " +
                     "3. DETAILS: See a 6-step roadmap and job alignment strategy for any scan. " +
-                    "MISTRAL MODEL: Performs the heavy ATS scoring and analysis. " +
-                    "GROQ MODEL: Powers this real-time assistant chat. " +
-                    "ALWAYS provide professional, concise advice without markdown like **bold**. ";
+                    "ALWAYS provide professional, concise advice without markdown like **bold**. ");
 
             if (context != null) {
-                systemPrompt += "RESUME CONTEXT: The user is targeting a '" + context.get("role") + "' role. " +
-                        "Their ATS score is " + context.get("score") + "%. " +
-                        "AI Recommendation: " + context.get("recommendation") + ". " +
-                        "Roadmap: " + context.get("roadmap") + ". ";
+                systemPrompt.append("RESUME CONTEXT: Target role '").append(context.getOrDefault("role", "Candidate")).append("'. ")
+                        .append("Score: ").append(context.getOrDefault("score", 0)).append("%. ");
+                if (context.containsKey("recommendation") && context.get("recommendation") != null) {
+                    String rec = String.valueOf(context.get("recommendation"));
+                    if (rec.length() > 250) rec = rec.substring(0, 250);
+                    systemPrompt.append("Recommendation: ").append(rec).append(". ");
+                }
             }
 
             HttpHeaders headers = new HttpHeaders();
@@ -53,7 +54,7 @@ public class GeminiService { // Name kept for compatibility, logic is GROQ
             Map<String, Object> body = new HashMap<>();
             body.put("model", model);
             body.put("messages", List.of(
-                Map.of("role", "system", "content", systemPrompt),
+                Map.of("role", "system", "content", systemPrompt.toString()),
                 Map.of("role", "user", "content", userQuery)
             ));
 
