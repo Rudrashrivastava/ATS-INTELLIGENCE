@@ -1,18 +1,24 @@
-# Use an official OpenJDK runtime as a parent image
-FROM openjdk:21-slim
-
-LABEL author="Rudra Shrivastava"
-
-LABEL maintainer="rudrashrivastava45@gmail.com"
-
-# Set the working directory in the container
+# Stage 1: Build stage using Maven and JDK 17
+FROM maven:3.9.6-eclipse-temurin-17-alpine AS build
 WORKDIR /app
 
-# Copy the executable JAR file into the container at /app
-COPY target/Analyzer-0.0.1-SNAPSHOT.jar app.jar
+# Copy pom.xml and source code to build package
+COPY pom.xml .
+COPY src ./src
+RUN mvn clean package -DskipTests
 
-# Expose the port the app runs on (default 8080)
-EXPOSE 8080
+# Stage 2: Runtime stage
+FROM eclipse-temurin:17-jre-alpine
+LABEL author="Rudra Shrivastava"
+LABEL maintainer="rudrashrivastava45@gmail.com"
 
-# Run the JAR file
+WORKDIR /app
+
+# Copy compiled JAR from build stage
+COPY --from=build /app/target/analyzer-0.0.1-SNAPSHOT.jar app.jar
+
+# Expose backend port
+EXPOSE 8081
+
+# Execute the application
 ENTRYPOINT ["java", "-jar", "app.jar"]

@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import axios from 'axios';
-import { Send, User, Bot, Loader2, X, Zap } from 'lucide-react';
+import { Send, User, Bot, Loader2, X, Zap, Activity } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
 export default function ChatInterface({ onClose, token }) {

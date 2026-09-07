@@ -24,7 +24,7 @@ public class GeminiService { // Name kept for compatibility, logic is GROQ
     @Value("${groq.base-url:https://api.groq.com/openai/v1/chat/completions}")
     private String baseUrl;
 
-    @Value("${groq.model:llama3-8b-8192}")
+    @Value("${groq.model:groq/compound-mini}")
     private String model;
 
     public String getChatResponse(String userQuery, Map<String, Object> context) {

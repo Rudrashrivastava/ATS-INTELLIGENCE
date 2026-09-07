@@ -1,0 +1,10 @@
+target/
+.mvn/
+.idea/
+.git/
+.gitignore
+*.log
+frontend/
+Dockerfile
+README.md
+NOTES.md

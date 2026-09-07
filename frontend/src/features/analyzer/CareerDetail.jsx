@@ -61,7 +61,7 @@ export default function CareerDetail() {
       
       <div style={{marginBottom: '48px', display: 'flex', justifyContent: 'space-between', alignItems: 'center'}}>
         <div style={{display: 'flex', alignItems: 'center', gap: '24px'}}>
-          <button onClick={() => navigate('/')} className="glass-card hover-lift" style={{padding: '12px', border: '1px solid rgba(255,255,255,0.1)', cursor: 'pointer', background: 'rgba(255,255,255,0.05)'}}>
+          <button onClick={() => navigate(-1)} className="glass-card hover-lift" style={{padding: '12px', border: '1px solid rgba(255,255,255,0.1)', cursor: 'pointer', background: 'rgba(255,255,255,0.05)'}}>
             <ArrowLeft size={20} color="#00E5FF" />
           </button>
           <div>

@@ -46,6 +46,7 @@ export const AuthProvider = ({ children }) => {
         setToken(res.data.token);
         axios.defaults.headers.common['Authorization'] = `Bearer ${res.data.token}`;
         
+        sessionStorage.clear();
         // Fetch user immediately
         const userRes = await axios.get('/api/user/me');
         setUser(userRes.data);
@@ -76,6 +77,7 @@ export const AuthProvider = ({ children }) => {
 
   const logout = () => {
     localStorage.removeItem('token');
+    sessionStorage.clear();
     delete axios.defaults.headers.common['Authorization'];
     setToken(null);
     setUser(null);
