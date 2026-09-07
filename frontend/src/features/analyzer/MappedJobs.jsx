@@ -3,7 +3,7 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { 
   ArrowLeft, Globe, Briefcase, MapPin, ExternalLink, 
-  Activity, Zap, ShieldCheck, Target, Search, Filter, CheckCircle, X, Send, Sparkles, Building, Layers, Navigation, Compass
+  Activity, Zap, ShieldCheck, Target, Search, Filter, CheckCircle, X, Send, Sparkles, Building, Layers, Navigation, Compass, Share2
 } from 'lucide-react';
 
 export default function MappedJobs() {
@@ -28,11 +28,8 @@ export default function MappedJobs() {
   const [selectedCompany, setSelectedCompany] = useState('All');
   const [selectedCategory, setSelectedCategory] = useState('All');
 
-  // Official Portal Redirect Modal State
-  const [selectedJob, setSelectedJob] = useState(null);
+  // Direct Apply Tracking & Redirect Toast State
   const [appliedJobs, setAppliedJobs] = useState({});
-  const [applyModalOpen, setApplyModalOpen] = useState(false);
-  const [modalTargetType, setModalTargetType] = useState('official'); // 'official' or 'platform'
   const [redirectToast, setRedirectToast] = useState(null);
 
   const rolePresets = [
@@ -58,7 +55,12 @@ export default function MappedJobs() {
 
   const workModes = ['All', 'Remote', 'Hybrid', 'Onsite'];
 
-  const companiesList = [
+  const popularCompanies = [
+    'All', 'Google', 'Microsoft', 'Amazon', 'Meta', 'Apple', 'NVIDIA', 'Netflix', 
+    'TCS', 'Infosys', 'Accenture', 'Wipro', 'IBM', 'Deloitte', 'Oracle', 'Adobe'
+  ];
+
+  const allCompaniesList = [
     'All', 'Google', 'Microsoft', 'Amazon', 'Meta', 'Apple', 'NVIDIA', 'Netflix', 
     'Tesla', 'Spotify', 'Airbnb', 'Stripe', 'OpenAI', 'Uber', 'Salesforce', 
     'TCS', 'Infosys', 'Accenture', 'Wipro', 'IBM', 'Deloitte', 'Oracle', 'Adobe',
@@ -144,51 +146,72 @@ export default function MappedJobs() {
     setFilteredJobs(list);
   }, [search, selectedWorkMode, selectedCompany, selectedCategory, jobs]);
 
-  // Accurate Official Company Career Deep Search URL Generator
-  const getOfficialDeepUrl = (job) => {
-    if (!job) return 'https://careers.google.com';
-    const compRaw = job.company_name || job.company || 'Google';
-    const comp = compRaw.toLowerCase().trim();
+  // URL Generators for Various Application Platforms
+  const getPlatformUrl = (platformKey, job) => {
+    const compRaw = job?.company_name || job?.company || 'Enterprise';
+    const comp = encodeURIComponent(compRaw);
     const role = encodeURIComponent(activeRole || 'Software Engineer');
-    const loc = encodeURIComponent(selectedCountry || 'India');
+    const loc = encodeURIComponent(selectedCountry === 'Global / All' ? 'Global' : selectedCountry);
 
-    if (comp.includes('google')) return `https://careers.google.com/jobs/results/?q=${role}&location=${loc}`;
-    if (comp.includes('microsoft')) return `https://careers.microsoft.com/us/en/search-results?keywords=${role}`;
-    if (comp.includes('amazon')) return `https://www.amazon.jobs/en/search?base_query=${role}`;
-    if (comp.includes('meta') || comp.includes('facebook')) return `https://www.metacareers.com/jobs?q=${role}`;
-    if (comp.includes('apple')) return `https://jobs.apple.com/en-us/search?search=${role}`;
-    if (comp.includes('nvidia')) return `https://nvidia.wd5.myworkdayjobs.com/NVIDIAExternalCareerSite?q=${role}`;
-    if (comp.includes('netflix')) return `https://jobs.netflix.com/search?q=${role}`;
-    if (comp.includes('tesla')) return `https://www.tesla.com/careers/search/?query=${role}`;
-    if (comp.includes('tcs')) return `https://www.tcs.com/careers`;
-    if (comp.includes('infosys')) return `https://www.infosys.com/careers.html`;
-    if (comp.includes('accenture')) return `https://www.accenture.com/in-en/careers/jobsearch?jk=${role}`;
-    if (comp.includes('wipro')) return `https://careers.wipro.com/careers-home/`;
-    if (comp.includes('ibm')) return `https://www.ibm.com/careers/search?q=${role}`;
-    if (comp.includes('deloitte')) return `https://www2.deloitte.com/ui/en/careers/job-search.html`;
-    if (comp.includes('oracle')) return `https://eeho.fa.us2.oraclecloud.com/hcmUI/CandidateExperience/en/sites/CX_1/requisitions?keyword=${role}`;
-    
-    if (job.url && job.url.includes('http')) return job.url;
+    switch (platformKey) {
+      case 'official':
+        const cLow = compRaw.toLowerCase().trim();
+        if (cLow.includes('google')) return `https://careers.google.com/jobs/results/?q=${role}&location=${loc}`;
+        if (cLow.includes('microsoft')) return `https://careers.microsoft.com/us/en/search-results?keywords=${role}`;
+        if (cLow.includes('amazon')) return `https://www.amazon.jobs/en/search?base_query=${role}`;
+        if (cLow.includes('meta') || cLow.includes('facebook')) return `https://www.metacareers.com/jobs?q=${role}`;
+        if (cLow.includes('apple')) return `https://jobs.apple.com/en-us/search?search=${role}`;
+        if (cLow.includes('nvidia')) return `https://nvidia.wd5.myworkdayjobs.com/NVIDIAExternalCareerSite?q=${role}`;
+        if (cLow.includes('netflix')) return `https://jobs.netflix.com/search?q=${role}`;
+        if (cLow.includes('tesla')) return `https://www.tesla.com/careers/search/?query=${role}`;
+        if (cLow.includes('tcs')) return `https://www.tcs.com/careers`;
+        if (cLow.includes('infosys')) return `https://www.infosys.com/careers.html`;
+        if (cLow.includes('accenture')) return `https://www.accenture.com/in-en/careers/jobsearch?jk=${role}`;
+        if (cLow.includes('wipro')) return `https://careers.wipro.com/careers-home/`;
+        if (cLow.includes('ibm')) return `https://www.ibm.com/careers/search?q=${role}`;
+        if (job?.url && job.url.includes('http')) return job.url;
+        return `https://www.google.com/search?q=${encodeURIComponent(`${compRaw} ${activeRole} careers ${selectedCountry}`)}`;
 
-    // Fallback: Google search directly for the accurate hiring page
-    return `https://www.google.com/search?q=${encodeURIComponent(`${compRaw} ${activeRole} careers ${selectedCountry}`)}`;
+      case 'linkedin':
+        return `https://www.linkedin.com/jobs/search/?keywords=${comp}%20${role}&location=${loc}`;
+
+      case 'naukri':
+        const naukriRole = (activeRole || '').toLowerCase().replace(/[^a-z0-9]+/g, '-');
+        const naukriLoc = selectedCountry.toLowerCase().replace(/[^a-z0-9]+/g, '-');
+        return `https://www.naukri.com/${naukriRole}-jobs-in-${naukriLoc}?k=${comp}%20${role}`;
+
+      case 'indeed':
+        return `https://www.indeed.com/jobs?q=${comp}%20${role}&l=${loc}`;
+
+      case 'glassdoor':
+        return `https://www.glassdoor.com/Job/jobs.htm?sc.keyword=${comp}%20${role}`;
+
+      case 'wellfound':
+        return `https://wellfound.com/jobs?q=${comp}%20${role}`;
+
+      case 'googlejobs':
+        return `https://www.google.com/search?q=${comp}%20${role}%20jobs%20in%20${loc}&ibp=htl;jobs`;
+
+      default:
+        return `https://www.google.com/search?q=${comp}%20${role}%20careers`;
+    }
   };
 
-  // Direct Job Platform Link Generator (LinkedIn, Naukri, Indeed)
-  const getPlatformUrl = (job) => {
-    if (!job) return 'https://www.linkedin.com/jobs/';
-    const comp = job.company_name || job.company || '';
-    const role = activeRole || 'Software Engineer';
-    const loc = selectedCountry === 'India' ? 'India' : selectedCountry;
+  const handleOpenPlatform = (platformKey, platformName, job) => {
+    const targetUrl = getPlatformUrl(platformKey, job);
+    const jobKey = `${job.title || ''}-${job.company_name || job.company}-${platformKey}`;
 
-    if (selectedCountry === 'India') {
-      // Direct Naukri search URL
-      const naukriRole = role.toLowerCase().replace(/[^a-z0-9]+/g, '-');
-      return `https://www.naukri.com/${naukriRole}-jobs-in-india?k=${encodeURIComponent(`${comp} ${role}`)}`;
-    }
+    window.open(targetUrl, '_blank', 'noopener,noreferrer');
 
-    // LinkedIn Job Search URL
-    return `https://www.linkedin.com/jobs/search/?keywords=${encodeURIComponent(`${comp} ${role}`)}&location=${encodeURIComponent(loc)}`;
+    setAppliedJobs(prev => ({ ...prev, [jobKey]: true }));
+
+    setRedirectToast({
+      company: job.company_name || job.company || 'Enterprise',
+      title: job.title || activeRole,
+      platform: platformName,
+      url: targetUrl
+    });
+    setTimeout(() => setRedirectToast(null), 5000);
   };
 
   const calculateJobMatch = (jobTitle) => {
@@ -196,34 +219,6 @@ export default function MappedJobs() {
     const title = (jobTitle || '').toLowerCase();
     if (title.includes(role)) return 92 + (title.length % 7);
     return 80 + (title.length % 15);
-  };
-
-  const handleApplyClick = (job, targetType = 'official') => {
-    setSelectedJob(job);
-    setModalTargetType(targetType);
-    setApplyModalOpen(true);
-  };
-
-  const handleProceedRedirect = () => {
-    if (!selectedJob) return;
-    const targetUrl = modalTargetType === 'official' ? getOfficialDeepUrl(selectedJob) : getPlatformUrl(selectedJob);
-    const jobKey = `${selectedJob.title || ''}-${selectedJob.company_name || selectedJob.company}-${modalTargetType}`;
-    
-    // Launch external application portal in new window/tab
-    window.open(targetUrl, '_blank', 'noopener,noreferrer');
-    
-    // Mark as redirected/applied
-    setAppliedJobs(prev => ({ ...prev, [jobKey]: true }));
-    setApplyModalOpen(false);
-
-    // Show confirmation feedback toast
-    setRedirectToast({
-      company: selectedJob.company_name || selectedJob.company,
-      title: selectedJob.title,
-      targetType: modalTargetType === 'official' ? 'Official Career Portal' : (selectedCountry === 'India' ? 'Naukri.com / LinkedIn' : 'LinkedIn Jobs'),
-      url: targetUrl
-    });
-    setTimeout(() => setRedirectToast(null), 5000);
   };
 
   const handleCustomRoleSubmit = (e) => {
@@ -243,15 +238,15 @@ export default function MappedJobs() {
   };
 
   return (
-    <div className="mapped-jobs-container animate-fade-in custom-scroll">
+    <div className="mapped-jobs-container animate-fade-in">
       
       {/* TOAST NOTIFICATION FOR REDIRECT */}
       {redirectToast && (
         <div className="redirect-toast glass-card animate-slide-down">
           <CheckCircle size={20} color="#10B981" />
           <div>
-            <strong>Redirected to {redirectToast.targetType}!</strong>
-            <p>Opened {redirectToast.company} live applications in a new browser tab.</p>
+            <strong>Redirected to {redirectToast.platform}!</strong>
+            <p>Opened {redirectToast.company} listings on {redirectToast.platform} in a new tab.</p>
           </div>
           <button onClick={() => setRedirectToast(null)} className="toast-close">
             <X size={16} />
@@ -272,7 +267,7 @@ export default function MappedJobs() {
             </div>
             <h1 className="header-title">Live Job Market Portal</h1>
             <p className="header-sub">
-              Filtered openings for <strong style={{ color: '#00F0FF' }}>[{activeRole.toUpperCase()}]</strong> in <strong style={{ color: '#8B5CF6' }}>[{selectedCountry.toUpperCase()}]</strong>. Apply via verified career portals.
+              Filtered openings for <strong style={{ color: '#00F0FF' }}>[{activeRole.toUpperCase()}]</strong> in <strong style={{ color: '#8B5CF6' }}>[{selectedCountry.toUpperCase()}]</strong>. Apply via top verified career platforms.
             </p>
           </div>
         </div>
@@ -390,18 +385,29 @@ export default function MappedJobs() {
             </div>
           </div>
 
-          <div className="filter-group" style={{ flex: 1 }}>
+          <div className="filter-group" style={{ flex: 1, minWidth: '260px' }}>
             <span className="filter-label-small"><Filter size={13} color="#00F0FF" /> COMPANY:</span>
-            <div className="filter-pills custom-scroll">
-              {companiesList.map(comp => (
-                <button
-                  key={comp}
-                  onClick={() => setSelectedCompany(comp)}
-                  className={`mini-pill ${selectedCompany === comp ? 'active-cyan' : ''}`}
-                >
-                  {comp.toUpperCase()}
-                </button>
-              ))}
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', width: '100%' }}>
+              <select 
+                value={selectedCompany} 
+                onChange={(e) => setSelectedCompany(e.target.value)}
+                className="company-dropdown-select"
+              >
+                {allCompaniesList.map(comp => (
+                  <option key={comp} value={comp}>{comp.toUpperCase()}</option>
+                ))}
+              </select>
+              <div className="filter-pills custom-scroll" style={{ flex: 1 }}>
+                {popularCompanies.map(comp => (
+                  <button
+                    key={comp}
+                    onClick={() => setSelectedCompany(comp)}
+                    className={`mini-pill ${selectedCompany === comp ? 'active-cyan' : ''}`}
+                  >
+                    {comp.toUpperCase()}
+                  </button>
+                ))}
+              </div>
             </div>
           </div>
 
@@ -418,7 +424,7 @@ export default function MappedJobs() {
           </span>
         </div>
         <div style={{ fontSize: '11px', color: 'var(--text-muted)', display: 'flex', alignItems: 'center', gap: '6px' }}>
-          <ShieldCheck size={14} color="#10B981" /> Accurate Deep Search URLs & Direct Platform Redirects
+          <ShieldCheck size={14} color="#10B981" /> Direct 1-Click Apply Across 7 Major Job Platforms
         </div>
       </div>
 
@@ -443,13 +449,11 @@ export default function MappedJobs() {
             const companyName = job.company_name || job.company || 'Enterprise Partner';
             const jobTitle = job.title || job.title_text || `${activeRole}`;
             const matchScore = calculateJobMatch(jobTitle);
-            const jobOfficialKey = `${jobTitle}-${companyName}-official`;
-            const jobPlatformKey = `${jobTitle}-${companyName}-platform`;
-            const isOfficialApplied = appliedJobs[jobOfficialKey];
-            const isPlatformApplied = appliedJobs[jobPlatformKey];
+            const officialKey = `${jobTitle}-${companyName}-official`;
+            const isOfficialApplied = appliedJobs[officialKey];
 
             return (
-              <div key={idx} className={`job-card glass-card hover-glow ${(isOfficialApplied || isPlatformApplied) ? 'redirected-card' : ''}`}>
+              <div key={idx} className={`job-card glass-card hover-glow ${isOfficialApplied ? 'redirected-card' : ''}`}>
                 
                 <div className="job-card-top">
                   <div className="company-logo-avatar">
@@ -469,40 +473,79 @@ export default function MappedJobs() {
 
                 <div className="job-tags-row">
                   <span className="tag-pill"><MapPin size={12} /> {job.location || `${selectedCountry}`}</span>
-                  <span className="tag-pill salary"><Zap size={12} /> {job.salary || (selectedCountry === 'India' ? '₹14L - ₹32L P.A.' : '$125,000 - $185,000')}</span>
+                  <span className="tag-pill salary"><Zap size={12} /> {job.salary || (selectedCountry === 'India' ? '₹14L - ₹35L P.A.' : '$125,000 - $185,000')}</span>
                 </div>
 
                 <p className="job-desc">
                   {job.description || `Key strategic hiring priority at ${companyName}. High alignment detected based on your analyzed resume skills.`}
                 </p>
 
-                {/* DUAL APPLY BUTTONS (Official Career Site & Platform Apply) */}
-                <div className="job-actions-vertical">
-                  
-                  {/* BUTTON 1: OFFICIAL CAREER PORTAL */}
-                  <button 
-                    onClick={() => handleApplyClick(job, 'official')}
-                    className={`btn-apply-action official ${isOfficialApplied ? 'applied' : ''}`}
-                  >
-                    {isOfficialApplied ? (
-                      <><CheckCircle size={15} color="#10B981" /> CAREER SITE OPENED ↗</>
-                    ) : (
-                      <><ExternalLink size={15} /> OFFICIAL CAREER SITE (ACCURATE SEARCH) ↗</>
-                    )}
-                  </button>
+                {/* PRIMARY OFFICIAL CAREER SITE BUTTON */}
+                <button 
+                  onClick={() => handleOpenPlatform('official', 'Official Career Portal', job)}
+                  className={`btn-primary-apply ${isOfficialApplied ? 'applied' : ''}`}
+                >
+                  {isOfficialApplied ? (
+                    <><CheckCircle size={15} color="#10B981" /> CAREER SITE OPENED ↗</>
+                  ) : (
+                    <><ExternalLink size={15} /> APPLY ON OFFICIAL CAREER PORTAL ↗</>
+                  )}
+                </button>
 
-                  {/* BUTTON 2: PLATFORM DIRECT APPLY (LinkedIn / Naukri) */}
-                  <button 
-                    onClick={() => handleApplyClick(job, 'platform')}
-                    className={`btn-apply-action platform ${isPlatformApplied ? 'applied' : ''}`}
-                  >
-                    {isPlatformApplied ? (
-                      <><CheckCircle size={15} color="#10B981" /> PLATFORM OPENED ↗</>
-                    ) : (
-                      <><Briefcase size={15} /> APPLY VIA {selectedCountry === 'India' ? 'NAUKRI / LINKEDIN' : 'LINKEDIN / INDEED'} ↗</>
-                    )}
-                  </button>
+                {/* 1-CLICK ALL MAJOR JOB PLATFORMS APPLICATION BAR */}
+                <div className="platforms-toolbar">
+                  <span className="platforms-label"><Share2 size={12} color="#8B5CF6" /> DIRECT APPLY PLATFORMS:</span>
+                  <div className="platform-buttons-grid">
+                    
+                    <button 
+                      onClick={() => handleOpenPlatform('linkedin', 'LinkedIn Jobs', job)}
+                      className={`platform-btn linkedin ${appliedJobs[`${jobTitle}-${companyName}-linkedin`] ? 'applied' : ''}`}
+                      title="Apply via LinkedIn Jobs"
+                    >
+                      <span className="platform-icon">💼</span> LinkedIn
+                    </button>
 
+                    <button 
+                      onClick={() => handleOpenPlatform('naukri', 'Naukri.com', job)}
+                      className={`platform-btn naukri ${appliedJobs[`${jobTitle}-${companyName}-naukri`] ? 'applied' : ''}`}
+                      title="Apply via Naukri.com"
+                    >
+                      <span className="platform-icon">🇮🇳</span> Naukri
+                    </button>
+
+                    <button 
+                      onClick={() => handleOpenPlatform('indeed', 'Indeed Jobs', job)}
+                      className={`platform-btn indeed ${appliedJobs[`${jobTitle}-${companyName}-indeed`] ? 'applied' : ''}`}
+                      title="Apply via Indeed"
+                    >
+                      <span className="platform-icon">🌐</span> Indeed
+                    </button>
+
+                    <button 
+                      onClick={() => handleOpenPlatform('glassdoor', 'Glassdoor', job)}
+                      className={`platform-btn glassdoor ${appliedJobs[`${jobTitle}-${companyName}-glassdoor`] ? 'applied' : ''}`}
+                      title="Apply via Glassdoor"
+                    >
+                      <span className="platform-icon">🟢</span> Glassdoor
+                    </button>
+
+                    <button 
+                      onClick={() => handleOpenPlatform('wellfound', 'Wellfound / AngelList', job)}
+                      className={`platform-btn wellfound ${appliedJobs[`${jobTitle}-${companyName}-wellfound`] ? 'applied' : ''}`}
+                      title="Apply via Wellfound / Startup Jobs"
+                    >
+                      <span className="platform-icon">🚀</span> Wellfound
+                    </button>
+
+                    <button 
+                      onClick={() => handleOpenPlatform('googlejobs', 'Google Jobs', job)}
+                      className={`platform-btn googlejobs ${appliedJobs[`${jobTitle}-${companyName}-googlejobs`] ? 'applied' : ''}`}
+                      title="Apply via Google Jobs Search"
+                    >
+                      <span className="platform-icon">🔍</span> Google Jobs
+                    </button>
+
+                  </div>
                 </div>
 
               </div>
@@ -511,82 +554,21 @@ export default function MappedJobs() {
         </div>
       )}
 
-      {/* OFFICIAL PORTAL REDIRECT CONFIRMATION MODAL */}
-      {applyModalOpen && selectedJob && (
-        <div className="modal-backdrop">
-          <div className="apply-modal glass-card animate-slide-up">
-            <div className="modal-header">
-              <div className="modal-title-box">
-                <div className="modal-avatar">
-                  {(selectedJob.company_name || selectedJob.company || 'G').charAt(0).toUpperCase()}
-                </div>
-                <div>
-                  <h2>Opening {modalTargetType === 'official' ? 'Official Career Site' : 'Direct Job Platform'}</h2>
-                  <p>{selectedJob.company_name || selectedJob.company} • {selectedJob.title}</p>
-                </div>
-              </div>
-              <button onClick={() => setApplyModalOpen(false)} className="close-modal-btn">
-                <X size={20} />
-              </button>
-            </div>
-
-            <div className="modal-body">
-              <div className="redirect-info-box">
-                <ShieldCheck size={28} color="#10B981" style={{ flexShrink: 0 }} />
-                <div>
-                  <h4 style={{ color: '#fff', fontSize: '14px', marginBottom: '4px' }}>
-                    {modalTargetType === 'official' ? 'Verified Official Career Portal' : 'Direct Job Application Platform'}
-                  </h4>
-                  <p style={{ fontSize: '12px', color: 'var(--text-muted)', lineHeight: '1.5' }}>
-                    {modalTargetType === 'official' 
-                      ? `We pre-filtered this link for "${activeRole}" in ${selectedCountry} so you don't have to re-type search criteria on ${selectedJob.company_name || selectedJob.company}'s career site.`
-                      : `Redirecting to pre-filtered hiring listings on ${selectedCountry === 'India' ? 'Naukri.com & LinkedIn India' : 'LinkedIn & Indeed'} for instant 1-click application.`
-                    }
-                  </p>
-                </div>
-              </div>
-
-              <div className="target-url-preview glass-card">
-                <span style={{ fontSize: '10px', color: '#8B5CF6', fontWeight: 'bold', letterSpacing: '1px' }}>ACCURATE DESTINATION URL:</span>
-                <span className="url-text">
-                  {modalTargetType === 'official' ? getOfficialDeepUrl(selectedJob) : getPlatformUrl(selectedJob)}
-                </span>
-              </div>
-
-              <div className="redirect-note">
-                <Sparkles size={14} color="#00F0FF" />
-                <span>Clicking below opens the exact filtered hiring portal in a new browser window.</span>
-              </div>
-            </div>
-
-            <div className="modal-actions">
-              <button type="button" onClick={() => setApplyModalOpen(false)} className="btn-cancel">
-                CANCEL
-              </button>
-              <button 
-                type="button" 
-                onClick={handleProceedRedirect} 
-                className="btn-glow flex-center" 
-                style={{ gap: '8px', padding: '12px 24px' }}
-              >
-                <ExternalLink size={16} /> PROCEED TO PORTAL ↗
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* COMPACT & SLEEK STYLES */}
+      {/* RESPONSIVE & HIGH-TECH STYLES */}
       <style dangerouslySetInnerHTML={{ __html: `
         .mapped-jobs-container {
-          padding: 32px 40px;
+          padding: 24px 32px;
           min-height: 100vh;
+          max-width: 1400px;
+          margin: 0 auto;
+          width: 100%;
+          box-sizing: border-box;
+          overflow-x: hidden;
           background: #060811;
           color: #fff;
           display: flex;
           flex-direction: column;
           gap: 20px;
-          position: relative;
         }
 
         .redirect-toast {
@@ -612,10 +594,12 @@ export default function MappedJobs() {
           display: flex;
           justify-content: space-between;
           align-items: center;
-          padding: 24px 32px;
+          padding: 20px 28px;
           background: rgba(13, 16, 29, 0.7);
           border-left: 3px solid #00F0FF;
           border-radius: 14px;
+          width: 100%;
+          box-sizing: border-box;
         }
         .header-left { display: flex; align-items: center; gap: 20px; }
         .back-btn { padding: 12px; border: 1px solid rgba(0, 240, 255, 0.2); cursor: pointer; background: rgba(0, 240, 255, 0.05); border-radius: 10px; transition: 0.2s; }
@@ -630,18 +614,18 @@ export default function MappedJobs() {
           letter-spacing: 1.5px;
           margin-bottom: 4px;
         }
-        .header-title { font-size: 26px; font-weight: bold; margin: 0; color: #fff; }
-        .header-sub { font-size: 13px; color: var(--text-muted); margin-top: 4px; }
+        .header-title { font-size: 24px; font-weight: bold; margin: 0; color: #fff; }
+        .header-sub { font-size: 12px; color: var(--text-muted); margin-top: 4px; }
         
         .search-bar {
           display: flex;
           align-items: center;
           gap: 12px;
-          padding: 12px 20px;
+          padding: 10px 18px;
           background: rgba(255,255,255,0.03);
           border: 1px solid rgba(0, 240, 255, 0.2);
           border-radius: 10px;
-          width: 360px;
+          width: 320px;
         }
         .search-bar input {
           border: none;
@@ -660,11 +644,28 @@ export default function MappedJobs() {
           border: 1px solid rgba(0, 240, 255, 0.15);
           display: flex;
           flex-direction: column;
+          width: 100%;
+          box-sizing: border-box;
+          max-width: 100%;
+          overflow: hidden;
         }
-        .preference-block { display: flex; flex-direction: column; gap: 8px; }
+        .preference-block { display: flex; flex-direction: column; gap: 8px; width: 100%; }
         .preference-header { font-size: 11px; font-weight: bold; color: var(--text-muted); letter-spacing: 1px; display: flex; align-items: center; gap: 8px; }
-        .pills-and-input-row { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
-        .filter-pills { display: flex; align-items: center; gap: 8px; overflow-x: auto; padding-bottom: 4px; flex: 1; }
+        .pills-and-input-row { display: flex; align-items: center; gap: 12px; width: 100%; max-width: 100%; overflow: hidden; }
+        
+        .filter-pills {
+          display: flex;
+          align-items: center;
+          gap: 8px;
+          overflow-x: auto;
+          white-space: nowrap;
+          max-width: 100%;
+          padding-bottom: 4px;
+          scrollbar-width: thin;
+          scrollbar-color: #00F0FF rgba(255,255,255,0.05);
+        }
+        .filter-pills::-webkit-scrollbar { height: 4px; }
+        .filter-pills::-webkit-scrollbar-thumb { background: #00F0FF; border-radius: 4px; }
 
         .pref-pill {
           padding: 6px 14px;
@@ -692,7 +693,7 @@ export default function MappedJobs() {
           box-shadow: 0 0 12px rgba(139, 92, 246, 0.35);
         }
 
-        .custom-input-form { display: flex; align-items: center; gap: 6px; }
+        .custom-input-form { display: flex; align-items: center; gap: 6px; flex-shrink: 0; }
         .custom-input-form input {
           padding: 6px 12px;
           background: rgba(0,0,0,0.3);
@@ -700,7 +701,7 @@ export default function MappedJobs() {
           border-radius: 6px;
           color: #fff;
           font-size: 11px;
-          width: 130px;
+          width: 120px;
           outline: none;
         }
         .custom-input-form input:focus { border-color: #00F0FF; }
@@ -715,10 +716,23 @@ export default function MappedJobs() {
           cursor: pointer;
         }
 
-        .secondary-filters-row { display: flex; gap: 16px; align-items: center; flex-wrap: wrap; }
-        .filter-group { display: flex; align-items: center; gap: 8px; }
+        .secondary-filters-row { display: flex; gap: 16px; align-items: center; width: 100%; box-sizing: border-box; }
+        .filter-group { display: flex; align-items: center; gap: 8px; min-width: 0; }
         .filter-label-small { font-size: 10px; font-weight: bold; color: var(--text-muted); letter-spacing: 1px; display: flex; align-items: center; gap: 4px; flex-shrink: 0; }
         
+        .company-dropdown-select {
+          padding: 5px 10px;
+          background: #0D101D;
+          border: 1px solid rgba(0, 240, 255, 0.3);
+          border-radius: 6px;
+          color: #00F0FF;
+          font-size: 11px;
+          font-weight: bold;
+          outline: none;
+          cursor: pointer;
+          flex-shrink: 0;
+        }
+
         .mini-pill {
           padding: 4px 10px;
           border-radius: 6px;
@@ -738,27 +752,33 @@ export default function MappedJobs() {
           display: flex;
           justify-content: space-between;
           align-items: center;
-          padding: 14px 24px;
+          padding: 12px 20px;
           background: rgba(0, 240, 255, 0.04);
           border: 1px solid rgba(0, 240, 255, 0.15);
           border-radius: 10px;
+          width: 100%;
+          box-sizing: border-box;
         }
 
         .jobs-grid {
           display: grid;
           grid-template-columns: repeat(auto-fill, minmax(360px, 1fr));
           gap: 20px;
+          width: 100%;
+          box-sizing: border-box;
         }
         .job-card {
-          padding: 24px;
+          padding: 22px;
           background: rgba(13, 16, 29, 0.65);
           border: 1px solid rgba(255, 255, 255, 0.08);
           border-radius: 14px;
           display: flex;
           flex-direction: column;
-          gap: 16px;
+          gap: 14px;
           transition: all 0.25 ease;
           position: relative;
+          width: 100%;
+          box-sizing: border-box;
         }
         .job-card:hover {
           border-color: rgba(0, 240, 255, 0.35);
@@ -813,14 +833,13 @@ export default function MappedJobs() {
         .job-desc {
           font-size: 12px;
           color: var(--text-muted);
-          line-height: 1.6;
-          height: 56px;
+          line-height: 1.5;
+          height: 52px;
           overflow: hidden;
           text-overflow: ellipsis;
         }
 
-        .job-actions-vertical { display: flex; flex-direction: column; gap: 8px; }
-        .btn-apply-action {
+        .btn-primary-apply {
           width: 100%;
           padding: 10px 14px;
           border-radius: 8px;
@@ -831,102 +850,69 @@ export default function MappedJobs() {
           align-items: center;
           justify-content: center;
           gap: 6px;
+          background: linear-gradient(135deg, rgba(0, 240, 255, 0.15), rgba(139, 92, 246, 0.15));
+          border: 1px solid #00F0FF;
+          color: #00F0FF;
           transition: all 0.2s ease;
         }
-        .btn-apply-action.official {
-          background: rgba(0, 240, 255, 0.1);
-          border: 1px solid rgba(0, 240, 255, 0.35);
-          color: #00F0FF;
+        .btn-primary-apply:hover {
+          background: #00F0FF;
+          color: #000;
+          box-shadow: 0 0 15px rgba(0, 240, 255, 0.4);
         }
-        .btn-apply-action.official:hover { background: #00F0FF; color: #000; box-shadow: 0 0 15px rgba(0, 240, 255, 0.4); }
-        
-        .btn-apply-action.platform {
-          background: rgba(139, 92, 246, 0.1);
-          border: 1px solid rgba(139, 92, 246, 0.35);
-          color: #C4B5FD;
+        .btn-primary-apply.applied {
+          background: rgba(16, 185, 129, 0.15);
+          color: #10B981;
+          border-color: rgba(16, 185, 129, 0.4);
         }
-        .btn-apply-action.platform:hover { background: #8B5CF6; color: #fff; box-shadow: 0 0 15px rgba(139, 92, 246, 0.4); }
-        
-        .btn-apply-action.applied { background: rgba(16, 185, 129, 0.15); color: #10B981; border-color: rgba(16, 185, 129, 0.4); }
 
-        .modal-backdrop {
-          position: fixed;
-          top: 0; left: 0; right: 0; bottom: 0;
-          background: rgba(0,0,0,0.8);
-          backdrop-filter: blur(8px);
-          z-index: 100000;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          padding: 20px;
-        }
-        .apply-modal {
-          width: 100%;
-          max-width: 540px;
-          padding: 32px;
-          background: #0D101D;
-          border: 1px solid rgba(0, 240, 255, 0.3);
-          border-radius: 16px;
-          box-shadow: 0 20px 50px rgba(0,0,0,0.5);
+        .platforms-toolbar {
           display: flex;
           flex-direction: column;
-          gap: 20px;
-        }
-        .modal-header { display: flex; justify-content: space-between; align-items: flex-start; }
-        .modal-title-box { display: flex; gap: 14px; align-items: center; }
-        .modal-avatar {
-          width: 42px;
-          height: 42px;
-          border-radius: 10px;
-          background: rgba(0, 240, 255, 0.15);
-          border: 1px solid #00F0FF;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          font-weight: bold;
-          color: #00F0FF;
-          font-size: 18px;
-        }
-        .modal-title-box h2 { font-size: 17px; margin: 0; color: #fff; }
-        .modal-title-box p { font-size: 12px; color: #00F0FF; margin-top: 2px; }
-        .close-modal-btn { background: none; border: none; color: var(--text-muted); cursor: pointer; }
-        .close-modal-btn:hover { color: #fff; }
-
-        .modal-body { display: flex; flex-direction: column; gap: 16px; }
-        .redirect-info-box {
-          display: flex;
-          gap: 14px;
-          align-items: flex-start;
-          padding: 16px;
-          background: rgba(16, 185, 129, 0.08);
-          border: 1px solid rgba(16, 185, 129, 0.25);
-          border-radius: 10px;
-        }
-        .target-url-preview {
-          padding: 12px 16px;
-          background: rgba(0,0,0,0.3);
-          border: 1px solid rgba(255,255,255,0.08);
-          border-radius: 8px;
-          display: flex;
-          flex-direction: column;
-          gap: 4px;
-        }
-        .url-text {
-          font-family: 'JetBrains Mono', monospace;
-          font-size: 12px;
-          color: #00F0FF;
-          word-break: break-all;
-        }
-        .redirect-note {
-          display: flex;
-          align-items: center;
           gap: 8px;
-          font-size: 11px;
-          color: var(--text-muted);
+          padding-top: 10px;
+          border-top: 1px solid rgba(255, 255, 255, 0.06);
+        }
+        .platforms-label { font-size: 9px; font-weight: bold; color: #8B5CF6; letter-spacing: 1px; display: flex; align-items: center; gap: 4px; }
+        .platform-buttons-grid {
+          display: grid;
+          grid-template-columns: repeat(3, 1fr);
+          gap: 6px;
+        }
+        .platform-btn {
+          padding: 6px 8px;
+          background: rgba(255, 255, 255, 0.03);
+          border: 1px solid rgba(255, 255, 255, 0.08);
+          border-radius: 6px;
+          color: #CBD5E1;
+          font-size: 10px;
+          font-weight: 600;
+          cursor: pointer;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          gap: 4px;
+          transition: all 0.2s ease;
+        }
+        .platform-btn:hover {
+          background: rgba(139, 92, 246, 0.15);
+          border-color: #8B5CF6;
+          color: #fff;
+        }
+        .platform-btn.linkedin:hover { background: rgba(10, 102, 194, 0.2); border-color: #0A66C2; color: #70B5F9; }
+        .platform-btn.naukri:hover { background: rgba(255, 117, 24, 0.2); border-color: #FF7518; color: #FF9D54; }
+        .platform-btn.indeed:hover { background: rgba(0, 58, 143, 0.2); border-color: #2164f3; color: #70A2FF; }
+        .platform-btn.glassdoor:hover { background: rgba(12, 170, 65, 0.2); border-color: #0CAA41; color: #52E583; }
+        .platform-btn.wellfound:hover { background: rgba(255, 0, 0, 0.15); border-color: #FF4F4F; color: #FF8585; }
+        .platform-btn.googlejobs:hover { background: rgba(66, 133, 244, 0.2); border-color: #4285F4; color: #82B1FF; }
+
+        .platform-btn.applied {
+          border-color: #10B981;
+          color: #10B981;
+          background: rgba(16, 185, 129, 0.1);
         }
 
-        .modal-actions { display: flex; justify-content: flex-end; gap: 12px; margin-top: 8px; }
-        .btn-cancel { padding: 10px 20px; background: none; border: 1px solid rgba(255,255,255,0.15); color: #fff; cursor: pointer; border-radius: 8px; font-size: 11px; font-weight: bold; }
+        .platform-icon { font-size: 11px; }
 
         .loading-state, .empty-jobs {
           padding: 80px 20px;
