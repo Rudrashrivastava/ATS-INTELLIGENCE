@@ -70,7 +70,8 @@ public class ATSScoreService {
                 "score (0-100 integer), recommendation (2-3 sentences), strengths (array of 4 strings), " +
                 "weaknesses (array of 4 strings), categoryScores (object with: Skills, Formatting, Keywords, Experience as integers), " +
                 "marketSearchQuery (a highly specific 3-5 word employment search query. CRITICAL: DO NOT use words like 'training', 'tutorial', 'course', or 'certification'. ONLY use employment terms like 'job', 'internship', 'associate', 'hiring', or 'vacancy' that fits the resume profile), trajectory (array of 6 strings), " +
-                "opportunities (array of objects: {title, desc}), resources (array of objects: {name, url}).\n" +
+                "opportunities (array of 4 objects with: title, desc - highly customized career milestones for this candidate), " +
+                "resources (array of 4 objects with: name, url - CRITICAL: generate authentic, role-specific documentation and learning URLs tailored to this specific tech stack, e.g., for Java use Spring Docs / Baeldung, for React use React.dev / MDN, for Data Science use PyTorch / Kaggle, for Python use Real Python / Python Docs. DO NOT output generic homepage links!).\n" +
                 "CRITICAL: NO MARKDOWN. NO CONVERSATION. ONLY JSON.";
 
         HttpHeaders headers = new HttpHeaders();
@@ -146,6 +147,14 @@ public class ATSScoreService {
                 .recommendation("Agent connection limited. Please synchronize API keys.")
                 .marketSearchQuery("Software Engineer")
                 .trajectory(List.of("Step 1: Check Mistral Sync", "Step 2: Check Groq Sync"))
+                .opportunities(List.of(
+                    Map.of("title", "Core Architecture Alignment", "desc", "Focus on system design and software principles."),
+                    Map.of("title", "Full Stack Optimization", "desc", "Enhance end-to-end performance and code cleanliness.")
+                ))
+                .resources(List.of(
+                    Map.of("name", "System Design Primer", "url", "https://github.com/donnemartin/system-design-primer"),
+                    Map.of("name", "Modern Developer Roadmap", "url", "https://roadmap.sh")
+                ))
                 .build();
     }
 }

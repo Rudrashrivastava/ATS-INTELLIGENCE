@@ -17,18 +17,62 @@ export default function CareerDetail() {
   const [resources, setResources] = useState([]);
   const [downloading, setDownloading] = useState(false);
 
+  const getRoleResources = (role = '') => {
+    const r = (role || '').toLowerCase();
+    if (r.includes('java') || r.includes('spring') || r.includes('backend')) {
+      return [
+        { name: 'Spring Boot Documentation & Guides', url: 'https://spring.io/projects/spring-boot' },
+        { name: 'Baeldung Java & Spring Tutorials', url: 'https://www.baeldung.com' },
+        { name: 'Microservices Architecture Patterns', url: 'https://microservices.io' },
+        { name: 'LeetCode Data Structures (Java Track)', url: 'https://leetcode.com/problemset/all/' }
+      ];
+    } else if (r.includes('react') || r.includes('frontend') || r.includes('web') || r.includes('ui') || r.includes('javascript')) {
+      return [
+        { name: 'React Official Documentation (React 18+)', url: 'https://react.dev' },
+        { name: 'MDN Web Docs & JavaScript Guide', url: 'https://developer.mozilla.org' },
+        { name: 'Web.dev Performance & Best Practices', url: 'https://web.dev' },
+        { name: 'Frontend Developer Roadmap', url: 'https://roadmap.sh/frontend' }
+      ];
+    } else if (r.includes('python') || r.includes('data') || r.includes('machine') || r.includes('ai') || r.includes('deep')) {
+      return [
+        { name: 'Python 3 Official Documentation', url: 'https://docs.python.org/3/' },
+        { name: 'PyTorch Deep Learning Tutorials', url: 'https://pytorch.org/tutorials/' },
+        { name: 'Real Python Hands-On Guides', url: 'https://realpython.com' },
+        { name: 'Kaggle Datasets & ML Notebooks', url: 'https://www.kaggle.com/datasets' }
+      ];
+    } else if (r.includes('devops') || r.includes('cloud') || r.includes('docker') || r.includes('kubernetes')) {
+      return [
+        { name: 'Docker Documentation & Architecture', url: 'https://docs.docker.com' },
+        { name: 'Kubernetes Official Guides', url: 'https://kubernetes.io/docs/home/' },
+        { name: 'AWS Cloud Architecture Center', url: 'https://aws.amazon.com/architecture/' },
+        { name: 'DevOps Developer Roadmap', url: 'https://roadmap.sh/devops' }
+      ];
+    }
+    return [
+      { name: 'System Design Primer', url: 'https://github.com/donnemartin/system-design-primer' },
+      { name: 'Developer Roadmaps & Skill Trees', url: 'https://roadmap.sh' },
+      { name: 'OWASP Security Top 10 Standards', url: 'https://owasp.org/www-project-top-ten/' },
+      { name: 'FreeCodeCamp Technical Certifications', url: 'https://www.freecodecamp.org' }
+    ];
+  };
+
   useEffect(() => {
     if (trajectory) {
       try {
         const parsedSteps = trajectory.trajectoryJson ? JSON.parse(trajectory.trajectoryJson) : [];
         const parsedOpps = trajectory.opportunitiesJson ? JSON.parse(trajectory.opportunitiesJson) : [];
-        const parsedResources = trajectory.resourcesJson ? JSON.parse(trajectory.resourcesJson) : [];
+        let parsedResources = trajectory.resourcesJson ? JSON.parse(trajectory.resourcesJson) : [];
         
+        if (!parsedResources || parsedResources.length === 0) {
+          parsedResources = getRoleResources(trajectory.primaryRole || trajectory.marketSearchQuery);
+        }
+
         setSteps(parsedSteps);
         setAlignmentRoadmap(parsedOpps);
         setResources(parsedResources);
       } catch (e) {
         console.error("Neural Decoding Failed", e);
+        setResources(getRoleResources(trajectory.primaryRole));
       }
     }
   }, [trajectory]);

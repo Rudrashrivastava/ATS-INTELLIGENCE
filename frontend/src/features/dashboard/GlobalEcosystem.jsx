@@ -5,11 +5,21 @@ import { useNavigate } from 'react-router-dom';
 
 export default function GlobalEcosystem() {
   const navigate = useNavigate();
-  const [history, setHistory] = useState([]);
-  const [personalHistory, setPersonalHistory] = useState([]);
-  const [recentActivity, setRecentActivity] = useState([]);
-  const [filteredHistory, setFilteredHistory] = useState([]);
-  const [loading, setLoading] = useState(true);
+
+  const cachedEcosystem = (() => {
+    try {
+      const raw = sessionStorage.getItem('ecosystem_cache');
+      return raw ? JSON.parse(raw) : null;
+    } catch (e) {
+      return null;
+    }
+  })();
+
+  const [history, setHistory] = useState(cachedEcosystem?.history || []);
+  const [personalHistory, setPersonalHistory] = useState(cachedEcosystem?.personalHistory || []);
+  const [recentActivity, setRecentActivity] = useState(cachedEcosystem?.recentActivity || []);
+  const [filteredHistory, setFilteredHistory] = useState(cachedEcosystem?.recentActivity || []);
+  const [loading, setLoading] = useState(!cachedEcosystem);
   const [search, setSearch] = useState('');
   const [scoreFilter, setScoreFilter] = useState(0);
   const [categoryFilter, setCategoryFilter] = useState('All');
@@ -24,10 +34,25 @@ export default function GlobalEcosystem() {
           axios.get('/api/resume/all-history', { headers: { Authorization: `Bearer ${token}` } }),
           axios.get('/api/resume/global-ecosystem-full', { headers: { Authorization: `Bearer ${token}` } })
         ]);
-        setHistory(globalRes.data || []);
-        setPersonalHistory(personalRes.data || []);
-        setRecentActivity(recentRes.data || []);
-        setFilteredHistory(recentRes.data || []); // Default to activity matching full feed
+
+        const gData = globalRes.data || [];
+        const pData = personalRes.data || [];
+        const rData = recentRes.data || [];
+
+        setHistory(gData);
+        setPersonalHistory(pData);
+        setRecentActivity(rData);
+
+        // Update cache synchronously
+        try {
+          sessionStorage.setItem('ecosystem_cache', JSON.stringify({
+            history: gData,
+            personalHistory: pData,
+            recentActivity: rData
+          }));
+        } catch (e) {
+          console.warn("Failed to save ecosystem cache", e);
+        }
       } catch (err) {
         console.error('Failed to fetch ecosystem data', err);
       } finally {

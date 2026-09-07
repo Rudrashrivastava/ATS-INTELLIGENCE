@@ -11,12 +11,21 @@ import { useAuth } from '../auth/hooks/useAuth';
 export default function Dashboard() {
   const { user: authUser, loading: authLoading } = useAuth();
   const navigate = useNavigate();
-  const [history, setHistory] = useState([]);
-  const [globalEcosystem, setGlobalEcosystem] = useState([]);
+  const cachedDashboard = (() => {
+    try {
+      const raw = sessionStorage.getItem('dashboard_cache');
+      return raw ? JSON.parse(raw) : null;
+    } catch (e) {
+      return null;
+    }
+  })();
+
+  const [history, setHistory] = useState(cachedDashboard?.history || []);
+  const [globalEcosystem, setGlobalEcosystem] = useState(cachedDashboard?.globalEcosystem || []);
   const [userName, setUserName] = useState(authUser?.name || authUser?.email?.split('@')[0] || 'User');
   const [isChatOpen, setIsChatOpen] = useState(false);
   
-  const [stats, setStats] = useState({
+  const [stats, setStats] = useState(cachedDashboard?.stats || {
     avgMatch: 0,
     personalScans: 0,
     totalProcessed: 0,
@@ -24,39 +33,58 @@ export default function Dashboard() {
     trend: 0
   });
   
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(!cachedDashboard);
 
   useEffect(() => {
     const fetchDashboardData = async () => {
       const token = localStorage.getItem('token');
       if (!token) return;
 
-      // Sync name from Auth Hook if available immediately
       if (authUser?.name) setUserName(authUser.name);
 
-      // 2. FETCH INTEGRATED DATA PIPELINES (Personal + Global)
       Promise.all([
         axios.get('/api/user/me', { headers: { Authorization: `Bearer ${token}` } }),
         axios.get('/api/resume/all-history', { headers: { Authorization: `Bearer ${token}` } }),
         axios.get('/api/resume/global-ecosystem', { headers: { Authorization: `Bearer ${token}` } }),
         axios.get('/api/resume/global-stats', { headers: { Authorization: `Bearer ${token}` } })
       ]).then(([userRes, historyRes, ecosystemRes, statsRes]) => {
-        setUserName(userRes.data?.name || authUser?.name || 'User');
-        setHistory(historyRes.data || []);
-        setGlobalEcosystem(ecosystemRes.data || []);
-        
+        const fetchedName = userRes.data?.name || authUser?.name || 'User';
+        const fetchedHistory = historyRes.data || [];
+        const fetchedEcosystem = ecosystemRes.data || [];
         const gStats = statsRes.data;
-        const pHistory = historyRes.data || [];
+
+        setUserName(fetchedName);
+        setHistory(fetchedHistory);
+        setGlobalEcosystem(fetchedEcosystem);
         
-        setStats(prev => ({
-          ...prev,
+        let calculatedTrend = 0;
+        if (fetchedHistory.length >= 2) {
+          const latest = fetchedHistory[0].overallScore;
+          const previous = fetchedHistory[1].overallScore;
+          calculatedTrend = previous !== 0 ? ((latest - previous) / previous * 100).toFixed(1) : 0;
+        }
+
+        const newStats = {
           avgMatch: gStats.avgMatch || 0,
-          personalScans: pHistory.length, // CALCULATION: Depends on User Action
+          personalScans: fetchedHistory.length,
           totalProcessed: gStats.totalProcessed || 0,
-          reach: 60 + (gStats.totalProcessed * 2)
-        }));
-        
+          reach: 60 + (gStats.totalProcessed * 2),
+          trend: calculatedTrend
+        };
+
+        setStats(newStats);
         setLoading(false);
+
+        // PERSIST ZERO-FLICKER CACHE
+        try {
+          sessionStorage.setItem('dashboard_cache', JSON.stringify({
+            history: fetchedHistory,
+            globalEcosystem: fetchedEcosystem,
+            stats: newStats
+          }));
+        } catch (e) {
+          console.warn("Failed to update dashboard cache", e);
+        }
       }).catch(err => {
         console.error("Neural Data Pipeline Interrupted", err);
         setLoading(false);

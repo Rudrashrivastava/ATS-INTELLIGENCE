@@ -7,8 +7,17 @@ import {
 } from 'lucide-react';
 
 export default function PastTrajectories() {
-  const [history, setHistory] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const cachedHistory = (() => {
+    try {
+      const raw = sessionStorage.getItem('history_cache');
+      return raw ? JSON.parse(raw) : null;
+    } catch (e) {
+      return null;
+    }
+  })();
+
+  const [history, setHistory] = useState(cachedHistory || []);
+  const [loading, setLoading] = useState(!cachedHistory);
   const navigate = useNavigate();
   const token = localStorage.getItem('token');
 
@@ -18,7 +27,11 @@ export default function PastTrajectories() {
         const res = await axios.get('/api/resume/all-history', {
           headers: { Authorization: `Bearer ${token}` }
         });
-        setHistory(res.data || []);
+        const fetchedData = res.data || [];
+        setHistory(fetchedData);
+        try {
+          sessionStorage.setItem('history_cache', JSON.stringify(fetchedData));
+        } catch (e) {}
       } catch (err) {
         console.error("Failed to fetch history", err);
       } finally {
