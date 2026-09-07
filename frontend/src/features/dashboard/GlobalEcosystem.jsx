@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import axios from 'axios';
-import { ArrowLeft, Globe, Activity, ShieldCheck, Users, Filter, Search, Mail } from 'lucide-react';
+import { ArrowLeft, Globe, Activity, ShieldCheck, Users, Filter, Search, Mail, FileText } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
 export default function GlobalEcosystem() {
@@ -215,7 +215,7 @@ export default function GlobalEcosystem() {
       ) : (
         <div className="glass-card" style={{padding: 0, overflow: 'hidden', border: '1px solid rgba(255,255,255,0.05)'}}>
           <div style={{
-            display: 'grid', gridTemplateColumns: '80px 2fr 2fr 1fr 1fr 120px', 
+            display: 'grid', gridTemplateColumns: '70px 1.8fr 1.8fr 1fr 1fr 180px', 
             padding: '24px 32px', background: 'rgba(255,255,255,0.03)', 
             borderBottom: '1px solid rgba(255,255,255,0.05)',
             fontSize: '11px', color: 'var(--primary)', fontWeight: 'bold', letterSpacing: '1px'
@@ -225,18 +225,18 @@ export default function GlobalEcosystem() {
             <span>IDENTIFIED ROLE</span>
             <span>MATCH SCORE</span>
             <span>SYNC TIME</span>
-            <span>OUTREACH</span>
+            <span>ACTIONS</span>
           </div>
 
           <div style={{maxHeight: '65vh', overflowY: 'auto'}}>
             {filteredHistory.length > 0 ? filteredHistory.map((item, idx) => (
               <div key={idx} style={{
-                display: 'grid', gridTemplateColumns: '80px 2fr 2fr 1fr 1fr 120px', 
-                padding: '20px 32px', borderBottom: '1px solid rgba(255,255,255,0.03)',
+                display: 'grid', gridTemplateColumns: '70px 1.8fr 1.8fr 1fr 1fr 180px', 
+                padding: '16px 32px', borderBottom: '1px solid rgba(255,255,255,0.03)',
                 alignItems: 'center', background: idx % 2 === 0 ? 'transparent' : 'rgba(255,255,255,0.01)'
               }}>
                 <div style={{
-                  width: '40px', height: '40px', borderRadius: '50%', background: 'rgba(0, 229, 255, 0.05)',
+                  width: '38px', height: '38px', borderRadius: '50%', background: 'rgba(0, 229, 255, 0.05)',
                   border: '1px solid rgba(0, 229, 255, 0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center',
                   color: 'var(--primary)', fontWeight: 'bold'
                 }}>
@@ -244,25 +244,38 @@ export default function GlobalEcosystem() {
                 </div>
                 <div style={{fontWeight: 'bold', color: '#fff'}}>{item.user?.name || 'Anonymous'}</div>
                 <div style={{color: 'var(--text-muted)', fontSize: '13px'}}>{item.primaryRole || 'Analyzed Record'}</div>
-                <div style={{fontSize: '20px', fontWeight: 'bold', color: item.overallScore >= 80 ? 'var(--primary)' : 'var(--secondary)'}}>
+                <div style={{fontSize: '18px', fontWeight: 'bold', color: item.overallScore >= 80 ? 'var(--primary)' : 'var(--secondary)'}}>
                   {item.overallScore}%
                 </div>
                 <div style={{fontSize: '11px', color: 'var(--text-muted)'}}>
                   {getRelativeTime(item.analysisDate)}
                 </div>
-                <div>
+                <div style={{display: 'flex', gap: '6px', alignItems: 'center'}}>
                   <button 
-                    onClick={() => navigate('/contact-candidate', { state: { candidate: item.user || { name: item.user?.name || 'Candidate' }, role: item.primaryRole, score: item.overallScore } })}
+                    onClick={() => navigate('/contact-candidate', { state: { candidate: item.user || { name: item.user?.name || 'Candidate' }, role: item.primaryRole, score: item.overallScore, trajectoryId: item.id } })}
                     className="glass-card hover-lift"
                     style={{
-                      padding: '8px 14px', background: 'rgba(0, 229, 255, 0.08)',
+                      padding: '6px 10px', background: 'rgba(0, 229, 255, 0.08)',
                       border: '1px solid rgba(0, 229, 255, 0.3)', color: '#00E5FF',
-                      borderRadius: '8px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px',
-                      fontSize: '11px', fontWeight: 'bold'
+                      borderRadius: '6px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '4px',
+                      fontSize: '10px', fontWeight: 'bold'
                     }}
                     title="Contact Candidate"
                   >
-                    <Mail size={14} /> HR EMAIL
+                    <Mail size={12} /> CONTACT
+                  </button>
+                  <button 
+                    onClick={() => navigate('/details', { state: { trajectory: item } })}
+                    className="glass-card hover-lift"
+                    style={{
+                      padding: '6px 10px', background: 'rgba(255, 255, 255, 0.05)',
+                      border: '1px solid rgba(255, 255, 255, 0.15)', color: '#fff',
+                      borderRadius: '6px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '4px',
+                      fontSize: '10px', fontWeight: 'bold'
+                    }}
+                    title="View Candidate CV & Dossier"
+                  >
+                    <FileText size={12} /> VIEW CV
                   </button>
                 </div>
               </div>

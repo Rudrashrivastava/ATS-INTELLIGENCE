@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { ArrowLeft, Mail, Send, CheckCircle, ShieldCheck, User, Building, Calendar, DollarSign, Sparkles } from 'lucide-react';
+import { ArrowLeft, Mail, Send, CheckCircle, ShieldCheck, User, Building, Calendar, DollarSign, Sparkles, FileText, Download } from 'lucide-react';
 import { useAuth } from '../auth/hooks/useAuth';
 
 export default function ContactCandidate() {
@@ -12,6 +12,7 @@ export default function ContactCandidate() {
   const candidateInfo = location.state?.candidate || {};
   const candidateRole = location.state?.role || candidateInfo.primaryRole || 'Fullstack Engineer';
   const matchScore = location.state?.score || candidateInfo.overallScore || 85;
+  const trajectoryId = location.state?.trajectoryId || candidateInfo.id || 1;
 
   const candidateName = candidateInfo.name || candidateInfo.user?.name || 'Candidate';
   const candidateEmail = candidateInfo.email || candidateInfo.user?.email || `${candidateName.toLowerCase().replace(/\s+/g, '')}@talent-ecosystem.io`;
@@ -112,7 +113,7 @@ export default function ContactCandidate() {
         <div className="glass-card" style={{ padding: '40px', border: '1px solid rgba(255,255,255,0.08)' }}>
           
           {/* Candidate Card Summary */}
-          <div className="glass-card" style={{ padding: '24px', marginBottom: '32px', background: 'rgba(0, 229, 255, 0.03)', border: '1px solid rgba(0, 229, 255, 0.15)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          <div className="glass-card" style={{ padding: '24px', marginBottom: '20px', background: 'rgba(0, 229, 255, 0.03)', border: '1px solid rgba(0, 229, 255, 0.15)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
               <div style={{ width: '56px', height: '56px', borderRadius: '50%', background: 'linear-gradient(135deg, #00E5FF, #0072FF)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '24px', color: '#000', fontWeight: 'bold' }}>
                 {candidateName.charAt(0).toUpperCase()}
@@ -127,6 +128,41 @@ export default function ContactCandidate() {
               <div style={{ fontSize: '28px', fontWeight: 'bold', color: matchScore >= 80 ? '#00E676' : '#00E5FF' }}>{matchScore}%</div>
               <div style={{ fontSize: '10px', color: 'var(--text-muted)', letterSpacing: '1px' }}>MATCH ACCURACY</div>
             </div>
+          </div>
+
+          {/* CANDIDATE CV & DOSSIER ACCESS BUTTONS FOR HR */}
+          <div style={{ display: 'flex', gap: '14px', marginBottom: '32px' }}>
+            <button
+              type="button"
+              onClick={() => {
+                const traj = location.state?.trajectory || { id: trajectoryId, primaryRole: candidateRole, overallScore: matchScore };
+                navigate('/details', { state: { trajectory: traj } });
+              }}
+              className="glass-card hover-lift"
+              style={{
+                flex: 1, padding: '12px 18px', background: 'rgba(0, 229, 255, 0.1)',
+                border: '1px solid rgba(0, 229, 255, 0.3)', color: '#00E5FF',
+                borderRadius: '8px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px',
+                fontSize: '12px', fontWeight: 'bold'
+              }}
+            >
+              <FileText size={16} /> VIEW CANDIDATE CV & DOSSIER
+            </button>
+
+            <a
+              href={`/api/resume/download-guide/${trajectoryId}`}
+              target="_blank"
+              rel="noreferrer"
+              className="glass-card hover-lift"
+              style={{
+                flex: 1, padding: '12px 18px', background: 'rgba(255, 255, 255, 0.05)',
+                border: '1px solid rgba(255, 255, 255, 0.15)', color: '#fff',
+                borderRadius: '8px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px',
+                fontSize: '12px', fontWeight: 'bold', textDecoration: 'none'
+              }}
+            >
+              <Download size={16} /> DOWNLOAD CANDIDATE DOSSIER (PDF)
+            </a>
           </div>
 
           {error && (
