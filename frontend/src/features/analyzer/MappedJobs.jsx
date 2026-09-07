@@ -3,12 +3,23 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { 
   ArrowLeft, Globe, Briefcase, MapPin, ExternalLink, 
-  Activity, Zap, ShieldCheck, Target, Search, Filter, CheckCircle, X, Send, Sparkles, Building, Layers
+  Activity, Zap, ShieldCheck, Target, Search, Filter, CheckCircle, X, Send, Sparkles, Building, Layers, Navigation, Compass
 } from 'lucide-react';
 
 export default function MappedJobs() {
   const { state } = useLocation();
   const navigate = useNavigate();
+
+  const analysisData = state?.analysisData || {};
+  const initialRole = analysisData.primaryRole || 'Software Engineer';
+
+  // State Management
+  const [activeRole, setActiveRole] = useState(initialRole);
+  const [customRoleInput, setCustomRoleInput] = useState('');
+  const [selectedCountry, setSelectedCountry] = useState('India');
+  const [customCountryInput, setCustomCountryInput] = useState('');
+  const [selectedWorkMode, setSelectedWorkMode] = useState('All');
+  
   const [jobs, setJobs] = useState([]);
   const [filteredJobs, setFilteredJobs] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -21,16 +32,52 @@ export default function MappedJobs() {
   const [selectedJob, setSelectedJob] = useState(null);
   const [appliedJobs, setAppliedJobs] = useState({});
   const [applyModalOpen, setApplyModalOpen] = useState(false);
+  const [modalTargetType, setModalTargetType] = useState('official'); // 'official' or 'platform'
   const [redirectToast, setRedirectToast] = useState(null);
 
-  const analysisData = state?.analysisData || {};
-  const query = analysisData.primaryRole || 'Software Engineer';
+  const rolePresets = [
+    'Software Engineer',
+    'Full Stack Engineer',
+    'Frontend Developer',
+    'Backend Developer',
+    'AI / ML Engineer',
+    'Data Scientist',
+    'DevOps / Cloud',
+    'Mobile Developer',
+    'Product Manager'
+  ];
 
+  const countryPresets = [
+    'India',
+    'United States',
+    'United Kingdom',
+    'Germany',
+    'Canada',
+    'Global / All'
+  ];
+
+  const workModes = ['All', 'Remote', 'Hybrid', 'Onsite'];
+
+  const companiesList = [
+    'All', 'Google', 'Microsoft', 'Amazon', 'Meta', 'Apple', 'NVIDIA', 'Netflix', 
+    'Tesla', 'Spotify', 'Airbnb', 'Stripe', 'OpenAI', 'Uber', 'Salesforce', 
+    'TCS', 'Infosys', 'Accenture', 'Wipro', 'IBM', 'Deloitte', 'Oracle', 'Adobe',
+    'Razorpay', 'LinkedIn', 'Palantir', 'Cisco', 'Intel', 'AMD', 'GitHub', 'Atlassian', 'SpaceX'
+  ];
+
+  const categoriesList = ['All', 'Tech Giants', 'AI & Cloud', 'Global Enterprise', 'Remote'];
+
+  // Fetch jobs dynamically based on user selected Role & Country
   useEffect(() => {
     const fetchMappedJobs = async () => {
       try {
         setLoading(true);
-        const res = await axios.get(`/api/jobs/mapped?query=${encodeURIComponent(query)}&location=United States`);
+        setError(null);
+
+        const currentRole = activeRole || 'Software Engineer';
+        const currentLocation = selectedCountry === 'Global / All' ? 'Global' : selectedCountry;
+
+        const res = await axios.get(`/api/jobs/mapped?query=${encodeURIComponent(currentRole)}&location=${encodeURIComponent(currentLocation)}`);
         
         const results = res.data.jobs_results || res.data.organic || [];
         setJobs(results);
@@ -44,11 +91,13 @@ export default function MappedJobs() {
     };
 
     fetchMappedJobs();
-  }, [query]);
+  }, [activeRole, selectedCountry]);
 
-  // Filter Jobs by Search, Company & Category
+  // Filter Jobs locally by Search, Work Mode, Company & Category
   useEffect(() => {
     let list = [...jobs];
+
+    // Local Text Search
     if (search.trim()) {
       const q = search.toLowerCase();
       list = list.filter(j => 
@@ -57,9 +106,26 @@ export default function MappedJobs() {
         (j.location || '').toLowerCase().includes(q)
       );
     }
+
+    // Work Mode Filter
+    if (selectedWorkMode !== 'All') {
+      const mode = selectedWorkMode.toLowerCase();
+      list = list.filter(j => {
+        const loc = (j.location || '').toLowerCase();
+        const desc = (j.description || '').toLowerCase();
+        if (mode === 'remote') return loc.includes('remote') || desc.includes('remote');
+        if (mode === 'hybrid') return loc.includes('hybrid') || desc.includes('hybrid');
+        if (mode === 'onsite') return !loc.includes('remote') && !desc.includes('remote');
+        return true;
+      });
+    }
+
+    // Company Filter
     if (selectedCompany !== 'All') {
       list = list.filter(j => (j.company_name || j.company || '').toLowerCase().includes(selectedCompany.toLowerCase()));
     }
+
+    // Category Filter
     if (selectedCategory !== 'All') {
       if (selectedCategory === 'Tech Giants') {
         const giants = ['google', 'microsoft', 'amazon', 'meta', 'apple', 'netflix', 'nvidia', 'tesla'];
@@ -74,42 +140,74 @@ export default function MappedJobs() {
         list = list.filter(j => (j.location || '').toLowerCase().includes('remote'));
       }
     }
+
     setFilteredJobs(list);
-  }, [search, selectedCompany, selectedCategory, jobs]);
+  }, [search, selectedWorkMode, selectedCompany, selectedCategory, jobs]);
+
+  // Accurate Official Company Career Deep Search URL Generator
+  const getOfficialDeepUrl = (job) => {
+    if (!job) return 'https://careers.google.com';
+    const compRaw = job.company_name || job.company || 'Google';
+    const comp = compRaw.toLowerCase().trim();
+    const role = encodeURIComponent(activeRole || 'Software Engineer');
+    const loc = encodeURIComponent(selectedCountry || 'India');
+
+    if (comp.includes('google')) return `https://careers.google.com/jobs/results/?q=${role}&location=${loc}`;
+    if (comp.includes('microsoft')) return `https://careers.microsoft.com/us/en/search-results?keywords=${role}`;
+    if (comp.includes('amazon')) return `https://www.amazon.jobs/en/search?base_query=${role}`;
+    if (comp.includes('meta') || comp.includes('facebook')) return `https://www.metacareers.com/jobs?q=${role}`;
+    if (comp.includes('apple')) return `https://jobs.apple.com/en-us/search?search=${role}`;
+    if (comp.includes('nvidia')) return `https://nvidia.wd5.myworkdayjobs.com/NVIDIAExternalCareerSite?q=${role}`;
+    if (comp.includes('netflix')) return `https://jobs.netflix.com/search?q=${role}`;
+    if (comp.includes('tesla')) return `https://www.tesla.com/careers/search/?query=${role}`;
+    if (comp.includes('tcs')) return `https://www.tcs.com/careers`;
+    if (comp.includes('infosys')) return `https://www.infosys.com/careers.html`;
+    if (comp.includes('accenture')) return `https://www.accenture.com/in-en/careers/jobsearch?jk=${role}`;
+    if (comp.includes('wipro')) return `https://careers.wipro.com/careers-home/`;
+    if (comp.includes('ibm')) return `https://www.ibm.com/careers/search?q=${role}`;
+    if (comp.includes('deloitte')) return `https://www2.deloitte.com/ui/en/careers/job-search.html`;
+    if (comp.includes('oracle')) return `https://eeho.fa.us2.oraclecloud.com/hcmUI/CandidateExperience/en/sites/CX_1/requisitions?keyword=${role}`;
+    
+    if (job.url && job.url.includes('http')) return job.url;
+
+    // Fallback: Google search directly for the accurate hiring page
+    return `https://www.google.com/search?q=${encodeURIComponent(`${compRaw} ${activeRole} careers ${selectedCountry}`)}`;
+  };
+
+  // Direct Job Platform Link Generator (LinkedIn, Naukri, Indeed)
+  const getPlatformUrl = (job) => {
+    if (!job) return 'https://www.linkedin.com/jobs/';
+    const comp = job.company_name || job.company || '';
+    const role = activeRole || 'Software Engineer';
+    const loc = selectedCountry === 'India' ? 'India' : selectedCountry;
+
+    if (selectedCountry === 'India') {
+      // Direct Naukri search URL
+      const naukriRole = role.toLowerCase().replace(/[^a-z0-9]+/g, '-');
+      return `https://www.naukri.com/${naukriRole}-jobs-in-india?k=${encodeURIComponent(`${comp} ${role}`)}`;
+    }
+
+    // LinkedIn Job Search URL
+    return `https://www.linkedin.com/jobs/search/?keywords=${encodeURIComponent(`${comp} ${role}`)}&location=${encodeURIComponent(loc)}`;
+  };
 
   const calculateJobMatch = (jobTitle) => {
-    const role = query.toLowerCase();
+    const role = activeRole.toLowerCase();
     const title = (jobTitle || '').toLowerCase();
     if (title.includes(role)) return 92 + (title.length % 7);
     return 80 + (title.length % 15);
   };
 
-  const companiesList = [
-    'All', 'Google', 'Microsoft', 'Amazon', 'Meta', 'Apple', 'NVIDIA', 'Netflix', 
-    'Tesla', 'Spotify', 'Airbnb', 'Stripe', 'OpenAI', 'Uber', 'Salesforce', 
-    'TCS', 'Infosys', 'Accenture', 'Wipro', 'IBM', 'Deloitte', 'Oracle', 'Adobe',
-    'Razorpay', 'LinkedIn', 'Palantir', 'Cisco', 'Intel', 'AMD', 'GitHub', 'Atlassian', 'SpaceX'
-  ];
-
-  const categoriesList = ['All', 'Tech Giants', 'AI & Cloud', 'Global Enterprise', 'Remote'];
-
-  const getJobUrl = (job) => {
-    if (!job) return 'https://careers.google.com';
-    if (job.url) return job.url;
-    if (job.related_links && job.related_links[0]?.link) return job.related_links[0].link;
-    const company = (job.company_name || job.company || 'google').toLowerCase().replace(/\s+/g, '');
-    return `https://careers.${company}.com`;
-  };
-
-  const handleApplyClick = (job) => {
+  const handleApplyClick = (job, targetType = 'official') => {
     setSelectedJob(job);
+    setModalTargetType(targetType);
     setApplyModalOpen(true);
   };
 
   const handleProceedRedirect = () => {
     if (!selectedJob) return;
-    const targetUrl = getJobUrl(selectedJob);
-    const jobKey = selectedJob.title || selectedJob.company_name || selectedJob.company;
+    const targetUrl = modalTargetType === 'official' ? getOfficialDeepUrl(selectedJob) : getPlatformUrl(selectedJob);
+    const jobKey = `${selectedJob.title || ''}-${selectedJob.company_name || selectedJob.company}-${modalTargetType}`;
     
     // Launch external application portal in new window/tab
     window.open(targetUrl, '_blank', 'noopener,noreferrer');
@@ -122,9 +220,26 @@ export default function MappedJobs() {
     setRedirectToast({
       company: selectedJob.company_name || selectedJob.company,
       title: selectedJob.title,
+      targetType: modalTargetType === 'official' ? 'Official Career Portal' : (selectedCountry === 'India' ? 'Naukri.com / LinkedIn' : 'LinkedIn Jobs'),
       url: targetUrl
     });
     setTimeout(() => setRedirectToast(null), 5000);
+  };
+
+  const handleCustomRoleSubmit = (e) => {
+    e.preventDefault();
+    if (customRoleInput.trim()) {
+      setActiveRole(customRoleInput.trim());
+      setCustomRoleInput('');
+    }
+  };
+
+  const handleCustomCountrySubmit = (e) => {
+    e.preventDefault();
+    if (customCountryInput.trim()) {
+      setSelectedCountry(customCountryInput.trim());
+      setCustomCountryInput('');
+    }
   };
 
   return (
@@ -135,8 +250,8 @@ export default function MappedJobs() {
         <div className="redirect-toast glass-card animate-slide-down">
           <CheckCircle size={20} color="#10B981" />
           <div>
-            <strong>Redirected to Official Portal!</strong>
-            <p>Opened {redirectToast.company} official application page in a new tab.</p>
+            <strong>Redirected to {redirectToast.targetType}!</strong>
+            <p>Opened {redirectToast.company} live applications in a new browser tab.</p>
           </div>
           <button onClick={() => setRedirectToast(null)} className="toast-close">
             <X size={16} />
@@ -155,9 +270,9 @@ export default function MappedJobs() {
               <Sparkles size={12} color="#00F0FF" />
               <span>LIVE COMPANY HIRING DIRECTORY • 30+ OPENINGS AVAILABLE</span>
             </div>
-            <h1 className="header-title">Live Company Hiring Portal</h1>
+            <h1 className="header-title">Live Job Market Portal</h1>
             <p className="header-sub">
-              Targeted position openings matching <strong style={{ color: '#00F0FF' }}>[{query.toUpperCase()}]</strong>. Apply directly via verified company career portals.
+              Filtered openings for <strong style={{ color: '#00F0FF' }}>[{activeRole.toUpperCase()}]</strong> in <strong style={{ color: '#8B5CF6' }}>[{selectedCountry.toUpperCase()}]</strong>. Apply via verified career portals.
             </p>
           </div>
         </div>
@@ -167,7 +282,7 @@ export default function MappedJobs() {
           <Search size={18} color="var(--text-muted)" />
           <input 
             type="text" 
-            placeholder="Search company (Google, Microsoft, TCS...) or role..." 
+            placeholder="Search company (Google, TCS...) or title..." 
             value={search}
             onChange={(e) => setSearch(e.target.value)}
           />
@@ -179,37 +294,119 @@ export default function MappedJobs() {
         </div>
       </div>
 
-      {/* CATEGORY & COMPANY FILTERS BAR */}
-      <div className="filters-container glass-card">
-        <div className="filter-row">
-          <span className="filter-label"><Layers size={14} color="#8B5CF6" /> CATEGORY:</span>
-          <div className="filter-pills custom-scroll">
-            {categoriesList.map(cat => (
-              <button
-                key={cat}
-                onClick={() => setSelectedCategory(cat)}
-                className={`category-btn ${selectedCategory === cat ? 'active' : ''}`}
-              >
-                {cat.toUpperCase()}
-              </button>
-            ))}
+      {/* USER PREFERENCE & SELECTION SECTIONS */}
+      <div className="user-preferences-panel glass-card">
+        
+        {/* TARGET ROLE SELECTOR */}
+        <div className="preference-block">
+          <div className="preference-header">
+            <Briefcase size={15} color="#00F0FF" />
+            <span>TARGET ROLE: <strong style={{ color: '#00F0FF' }}>{activeRole}</strong></span>
+          </div>
+          <div className="pills-and-input-row">
+            <div className="filter-pills custom-scroll">
+              {rolePresets.map(role => (
+                <button
+                  key={role}
+                  onClick={() => setActiveRole(role)}
+                  className={`pref-pill ${activeRole === role ? 'active-cyan' : ''}`}
+                >
+                  {role}
+                </button>
+              ))}
+            </div>
+            <form onSubmit={handleCustomRoleSubmit} className="custom-input-form">
+              <input 
+                type="text" 
+                placeholder="Other Role..."
+                value={customRoleInput}
+                onChange={(e) => setCustomRoleInput(e.target.value)}
+              />
+              <button type="submit" className="btn-small-glow">SET</button>
+            </form>
           </div>
         </div>
 
-        <div className="filter-row" style={{ marginTop: '12px' }}>
-          <span className="filter-label"><Filter size={14} color="#00F0FF" /> COMPANY:</span>
-          <div className="filter-pills custom-scroll">
-            {companiesList.map(comp => (
-              <button
-                key={comp}
-                onClick={() => setSelectedCompany(comp)}
-                className={`filter-btn ${selectedCompany === comp ? 'active' : ''}`}
-              >
-                {comp.toUpperCase()}
-              </button>
-            ))}
+        {/* COUNTRY SELECTOR */}
+        <div className="preference-block" style={{ marginTop: '14px' }}>
+          <div className="preference-header">
+            <Compass size={15} color="#8B5CF6" />
+            <span>HIRING LOCATION: <strong style={{ color: '#8B5CF6' }}>{selectedCountry}</strong></span>
+          </div>
+          <div className="pills-and-input-row">
+            <div className="filter-pills custom-scroll">
+              {countryPresets.map(c => (
+                <button
+                  key={c}
+                  onClick={() => setSelectedCountry(c)}
+                  className={`pref-pill ${selectedCountry === c ? 'active-violet' : ''}`}
+                >
+                  {c === 'India' ? '🇮🇳 India (Default)' : c}
+                </button>
+              ))}
+            </div>
+            <form onSubmit={handleCustomCountrySubmit} className="custom-input-form">
+              <input 
+                type="text" 
+                placeholder="Other Country..."
+                value={customCountryInput}
+                onChange={(e) => setCustomCountryInput(e.target.value)}
+              />
+              <button type="submit" className="btn-small-glow">SET</button>
+            </form>
           </div>
         </div>
+
+        {/* WORK MODE & CATEGORY & COMPANY FILTERS */}
+        <div className="secondary-filters-row" style={{ marginTop: '16px', paddingTop: '16px', borderTop: '1px solid rgba(255,255,255,0.06)' }}>
+          
+          <div className="filter-group">
+            <span className="filter-label-small"><Navigation size={13} color="#10B981" /> MODE:</span>
+            <div className="filter-pills">
+              {workModes.map(mode => (
+                <button
+                  key={mode}
+                  onClick={() => setSelectedWorkMode(mode)}
+                  className={`mini-pill ${selectedWorkMode === mode ? 'active-emerald' : ''}`}
+                >
+                  {mode.toUpperCase()}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          <div className="filter-group">
+            <span className="filter-label-small"><Layers size={13} color="#8B5CF6" /> CATEGORY:</span>
+            <div className="filter-pills custom-scroll">
+              {categoriesList.map(cat => (
+                <button
+                  key={cat}
+                  onClick={() => setSelectedCategory(cat)}
+                  className={`mini-pill ${selectedCategory === cat ? 'active-violet' : ''}`}
+                >
+                  {cat.toUpperCase()}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          <div className="filter-group" style={{ flex: 1 }}>
+            <span className="filter-label-small"><Filter size={13} color="#00F0FF" /> COMPANY:</span>
+            <div className="filter-pills custom-scroll">
+              {companiesList.map(comp => (
+                <button
+                  key={comp}
+                  onClick={() => setSelectedCompany(comp)}
+                  className={`mini-pill ${selectedCompany === comp ? 'active-cyan' : ''}`}
+                >
+                  {comp.toUpperCase()}
+                </button>
+              ))}
+            </div>
+          </div>
+
+        </div>
+
       </div>
 
       {/* OPENINGS SUMMARY BANNER */}
@@ -217,11 +414,11 @@ export default function MappedJobs() {
         <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
           <Building size={20} color="#00F0FF" />
           <span style={{ fontSize: '13px', fontWeight: 'bold' }}>
-            Showing <span style={{ color: '#00F0FF' }}>{filteredJobs.length}</span> Verified Job Openings for <span style={{ color: '#8B5CF6' }}>"{query}"</span>
+            Showing <span style={{ color: '#00F0FF' }}>{filteredJobs.length}</span> Verified Openings for <span style={{ color: '#8B5CF6' }}>"{activeRole}"</span> in <span style={{ color: '#10B981' }}>{selectedCountry}</span>
           </span>
         </div>
         <div style={{ fontSize: '11px', color: 'var(--text-muted)', display: 'flex', alignItems: 'center', gap: '6px' }}>
-          <ShieldCheck size={14} color="#10B981" /> 100% Direct Official Career Portal Links
+          <ShieldCheck size={14} color="#10B981" /> Accurate Deep Search URLs & Direct Platform Redirects
         </div>
       </div>
 
@@ -229,14 +426,14 @@ export default function MappedJobs() {
       {loading ? (
         <div className="loading-state glass-card">
           <Activity className="pulse-slow" size={48} color="#00F0FF" />
-          <p>SYNCHRONIZING 30+ LIVE COMPANY HIRING NODES...</p>
+          <p>FETCHING {activeRole.toUpperCase()} JOBS IN {selectedCountry.toUpperCase()}...</p>
         </div>
       ) : filteredJobs.length === 0 ? (
         <div className="empty-jobs glass-card">
           <Building size={48} color="#00F0FF" />
-          <h3>No positions matching "{search || selectedCompany || selectedCategory}"</h3>
-          <p>Try resetting search query or selecting a different company or role category filter.</p>
-          <button onClick={() => { setSearch(''); setSelectedCompany('All'); setSelectedCategory('All'); }} className="btn-glow" style={{ marginTop: '16px', padding: '10px 24px' }}>
+          <h3>No positions matching "{search || selectedCompany || selectedWorkMode}"</h3>
+          <p>Try clearing search text or resetting company / work mode filters.</p>
+          <button onClick={() => { setSearch(''); setSelectedCompany('All'); setSelectedCategory('All'); setSelectedWorkMode('All'); }} className="btn-glow" style={{ marginTop: '16px', padding: '10px 24px' }}>
             RESET ALL FILTERS
           </button>
         </div>
@@ -244,14 +441,15 @@ export default function MappedJobs() {
         <div className="jobs-grid">
           {filteredJobs.map((job, idx) => {
             const companyName = job.company_name || job.company || 'Enterprise Partner';
-            const jobTitle = job.title || job.title_text || `${query} Engineer`;
+            const jobTitle = job.title || job.title_text || `${activeRole}`;
             const matchScore = calculateJobMatch(jobTitle);
-            const jobKey = jobTitle || companyName;
-            const isApplied = appliedJobs[jobKey];
-            const targetUrl = getJobUrl(job);
+            const jobOfficialKey = `${jobTitle}-${companyName}-official`;
+            const jobPlatformKey = `${jobTitle}-${companyName}-platform`;
+            const isOfficialApplied = appliedJobs[jobOfficialKey];
+            const isPlatformApplied = appliedJobs[jobPlatformKey];
 
             return (
-              <div key={idx} className={`job-card glass-card hover-glow ${isApplied ? 'redirected-card' : ''}`}>
+              <div key={idx} className={`job-card glass-card hover-glow ${(isOfficialApplied || isPlatformApplied) ? 'redirected-card' : ''}`}>
                 
                 <div className="job-card-top">
                   <div className="company-logo-avatar">
@@ -270,36 +468,43 @@ export default function MappedJobs() {
                 </div>
 
                 <div className="job-tags-row">
-                  <span className="tag-pill"><MapPin size={12} /> {job.location || 'Remote / Global'}</span>
-                  <span className="tag-pill salary"><Zap size={12} /> {job.salary || '$125,000 - $185,000'}</span>
+                  <span className="tag-pill"><MapPin size={12} /> {job.location || `${selectedCountry}`}</span>
+                  <span className="tag-pill salary"><Zap size={12} /> {job.salary || (selectedCountry === 'India' ? '₹14L - ₹32L P.A.' : '$125,000 - $185,000')}</span>
                 </div>
 
                 <p className="job-desc">
                   {job.description || `Key strategic hiring priority at ${companyName}. High alignment detected based on your analyzed resume skills.`}
                 </p>
 
-                <div className="job-actions">
+                {/* DUAL APPLY BUTTONS (Official Career Site & Platform Apply) */}
+                <div className="job-actions-vertical">
+                  
+                  {/* BUTTON 1: OFFICIAL CAREER PORTAL */}
                   <button 
-                    onClick={() => handleApplyClick(job)}
-                    className={`btn-apply-redirect ${isApplied ? 'applied' : ''}`}
+                    onClick={() => handleApplyClick(job, 'official')}
+                    className={`btn-apply-action official ${isOfficialApplied ? 'applied' : ''}`}
                   >
-                    {isApplied ? (
-                      <><CheckCircle size={15} color="#10B981" /> PORTAL OPENED ↗</>
+                    {isOfficialApplied ? (
+                      <><CheckCircle size={15} color="#10B981" /> CAREER SITE OPENED ↗</>
                     ) : (
-                      <><ExternalLink size={15} /> APPLY ON OFFICIAL PORTAL ↗</>
+                      <><ExternalLink size={15} /> OFFICIAL CAREER SITE (ACCURATE SEARCH) ↗</>
                     )}
                   </button>
 
-                  <a 
-                    href={targetUrl}
-                    target="_blank" 
-                    rel="noopener noreferrer"
-                    className="btn-external-link"
-                    title="Direct Link to Official Career Site"
+                  {/* BUTTON 2: PLATFORM DIRECT APPLY (LinkedIn / Naukri) */}
+                  <button 
+                    onClick={() => handleApplyClick(job, 'platform')}
+                    className={`btn-apply-action platform ${isPlatformApplied ? 'applied' : ''}`}
                   >
-                    <Globe size={16} />
-                  </a>
+                    {isPlatformApplied ? (
+                      <><CheckCircle size={15} color="#10B981" /> PLATFORM OPENED ↗</>
+                    ) : (
+                      <><Briefcase size={15} /> APPLY VIA {selectedCountry === 'India' ? 'NAUKRI / LINKEDIN' : 'LINKEDIN / INDEED'} ↗</>
+                    )}
+                  </button>
+
                 </div>
+
               </div>
             );
           })}
@@ -316,7 +521,7 @@ export default function MappedJobs() {
                   {(selectedJob.company_name || selectedJob.company || 'G').charAt(0).toUpperCase()}
                 </div>
                 <div>
-                  <h2>Redirecting to Official Career Portal</h2>
+                  <h2>Opening {modalTargetType === 'official' ? 'Official Career Site' : 'Direct Job Platform'}</h2>
                   <p>{selectedJob.company_name || selectedJob.company} • {selectedJob.title}</p>
                 </div>
               </div>
@@ -329,21 +534,28 @@ export default function MappedJobs() {
               <div className="redirect-info-box">
                 <ShieldCheck size={28} color="#10B981" style={{ flexShrink: 0 }} />
                 <div>
-                  <h4 style={{ color: '#fff', fontSize: '14px', marginBottom: '4px' }}>Official Application Page</h4>
+                  <h4 style={{ color: '#fff', fontSize: '14px', marginBottom: '4px' }}>
+                    {modalTargetType === 'official' ? 'Verified Official Career Portal' : 'Direct Job Application Platform'}
+                  </h4>
                   <p style={{ fontSize: '12px', color: 'var(--text-muted)', lineHeight: '1.5' }}>
-                    Applying directly on the hiring company's portal guarantees your resume reaches their recruiters without third-party delay.
+                    {modalTargetType === 'official' 
+                      ? `We pre-filtered this link for "${activeRole}" in ${selectedCountry} so you don't have to re-type search criteria on ${selectedJob.company_name || selectedJob.company}'s career site.`
+                      : `Redirecting to pre-filtered hiring listings on ${selectedCountry === 'India' ? 'Naukri.com & LinkedIn India' : 'LinkedIn & Indeed'} for instant 1-click application.`
+                    }
                   </p>
                 </div>
               </div>
 
               <div className="target-url-preview glass-card">
-                <span style={{ fontSize: '10px', color: '#8B5CF6', fontWeight: 'bold', letterSpacing: '1px' }}>DESTINATION PORTAL:</span>
-                <span className="url-text">{getJobUrl(selectedJob)}</span>
+                <span style={{ fontSize: '10px', color: '#8B5CF6', fontWeight: 'bold', letterSpacing: '1px' }}>ACCURATE DESTINATION URL:</span>
+                <span className="url-text">
+                  {modalTargetType === 'official' ? getOfficialDeepUrl(selectedJob) : getPlatformUrl(selectedJob)}
+                </span>
               </div>
 
               <div className="redirect-note">
                 <Sparkles size={14} color="#00F0FF" />
-                <span>Clicking below will open {selectedJob.company_name || selectedJob.company}'s official application page in a new browser tab.</span>
+                <span>Clicking below opens the exact filtered hiring portal in a new browser window.</span>
               </div>
             </div>
 
@@ -357,7 +569,7 @@ export default function MappedJobs() {
                 className="btn-glow flex-center" 
                 style={{ gap: '8px', padding: '12px 24px' }}
               >
-                <ExternalLink size={16} /> PROCEED TO OFFICIAL APPLICATION ↗
+                <ExternalLink size={16} /> PROCEED TO PORTAL ↗
               </button>
             </div>
           </div>
@@ -405,7 +617,7 @@ export default function MappedJobs() {
           border-left: 3px solid #00F0FF;
           border-radius: 14px;
         }
-        .header-left { display: flex; alignItems: center; gap: 20px; }
+        .header-left { display: flex; align-items: center; gap: 20px; }
         .back-btn { padding: 12px; border: 1px solid rgba(0, 240, 255, 0.2); cursor: pointer; background: rgba(0, 240, 255, 0.05); border-radius: 10px; transition: 0.2s; }
         .back-btn:hover { background: rgba(0, 240, 255, 0.15); transform: translateX(-3px); }
         .header-badge {
@@ -429,7 +641,7 @@ export default function MappedJobs() {
           background: rgba(255,255,255,0.03);
           border: 1px solid rgba(0, 240, 255, 0.2);
           border-radius: 10px;
-          width: 380px;
+          width: 360px;
         }
         .search-bar input {
           border: none;
@@ -440,53 +652,87 @@ export default function MappedJobs() {
           font-size: 13px;
         }
 
-        .filters-container {
-          padding: 18px 24px;
-          background: rgba(13, 16, 29, 0.6);
-          border-radius: 12px;
-          border: 1px solid rgba(255, 255, 255, 0.06);
+        /* USER PREFERENCES PANEL STYLES */
+        .user-preferences-panel {
+          padding: 20px 24px;
+          background: rgba(13, 16, 29, 0.7);
+          border-radius: 14px;
+          border: 1px solid rgba(0, 240, 255, 0.15);
+          display: flex;
+          flex-direction: column;
         }
-        .filter-row { display: flex; align-items: center; gap: 14px; }
-        .filter-label { font-size: 11px; font-weight: bold; color: var(--text-muted); letter-spacing: 1px; display: flex; align-items: center; gap: 6px; flex-shrink: 0; width: 110px; }
+        .preference-block { display: flex; flex-direction: column; gap: 8px; }
+        .preference-header { font-size: 11px; font-weight: bold; color: var(--text-muted); letter-spacing: 1px; display: flex; align-items: center; gap: 8px; }
+        .pills-and-input-row { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
         .filter-pills { display: flex; align-items: center; gap: 8px; overflow-x: auto; padding-bottom: 4px; flex: 1; }
-        
-        .category-btn {
-          padding: 6px 14px;
-          border-radius: 6px;
-          font-size: 11px;
-          font-weight: bold;
-          background: rgba(139, 92, 246, 0.08);
-          border: 1px solid rgba(139, 92, 246, 0.2);
-          color: #C4B5FD;
-          cursor: pointer;
-          flex-shrink: 0;
-          transition: all 0.2s ease;
-        }
-        .category-btn.active {
-          background: #8B5CF6;
-          color: #fff;
-          border-color: #8B5CF6;
-          box-shadow: 0 0 12px rgba(139, 92, 246, 0.4);
-        }
 
-        .filter-btn {
+        .pref-pill {
           padding: 6px 14px;
-          border-radius: 6px;
-          font-size: 11px;
-          font-weight: bold;
+          border-radius: 8px;
+          font-size: 12px;
+          font-weight: 600;
           background: rgba(255,255,255,0.04);
           border: 1px solid rgba(255,255,255,0.08);
-          color: #fff;
+          color: #CBD5E1;
           cursor: pointer;
           flex-shrink: 0;
           transition: all 0.2s ease;
         }
-        .filter-btn.active {
-          background: #00F0FF;
-          color: #000;
+        .pref-pill:hover { border-color: rgba(0, 240, 255, 0.4); color: #fff; }
+        .pref-pill.active-cyan {
+          background: rgba(0, 240, 255, 0.15);
+          color: #00F0FF;
           border-color: #00F0FF;
-          box-shadow: 0 0 12px rgba(0, 240, 255, 0.4);
+          box-shadow: 0 0 12px rgba(0, 240, 255, 0.3);
         }
+        .pref-pill.active-violet {
+          background: rgba(139, 92, 246, 0.2);
+          color: #C4B5FD;
+          border-color: #8B5CF6;
+          box-shadow: 0 0 12px rgba(139, 92, 246, 0.35);
+        }
+
+        .custom-input-form { display: flex; align-items: center; gap: 6px; }
+        .custom-input-form input {
+          padding: 6px 12px;
+          background: rgba(0,0,0,0.3);
+          border: 1px solid rgba(255,255,255,0.15);
+          border-radius: 6px;
+          color: #fff;
+          font-size: 11px;
+          width: 130px;
+          outline: none;
+        }
+        .custom-input-form input:focus { border-color: #00F0FF; }
+        .btn-small-glow {
+          padding: 6px 12px;
+          background: rgba(0, 240, 255, 0.15);
+          border: 1px solid #00F0FF;
+          color: #00F0FF;
+          border-radius: 6px;
+          font-size: 10px;
+          font-weight: bold;
+          cursor: pointer;
+        }
+
+        .secondary-filters-row { display: flex; gap: 16px; align-items: center; flex-wrap: wrap; }
+        .filter-group { display: flex; align-items: center; gap: 8px; }
+        .filter-label-small { font-size: 10px; font-weight: bold; color: var(--text-muted); letter-spacing: 1px; display: flex; align-items: center; gap: 4px; flex-shrink: 0; }
+        
+        .mini-pill {
+          padding: 4px 10px;
+          border-radius: 6px;
+          font-size: 10px;
+          font-weight: bold;
+          background: rgba(255,255,255,0.03);
+          border: 1px solid rgba(255,255,255,0.08);
+          color: #94A3B8;
+          cursor: pointer;
+          flex-shrink: 0;
+        }
+        .mini-pill.active-emerald { background: rgba(16, 185, 129, 0.2); color: #10B981; border-color: #10B981; }
+        .mini-pill.active-violet { background: rgba(139, 92, 246, 0.2); color: #C4B5FD; border-color: #8B5CF6; }
+        .mini-pill.active-cyan { background: rgba(0, 240, 255, 0.2); color: #00F0FF; border-color: #00F0FF; }
 
         .openings-summary-banner {
           display: flex;
@@ -573,16 +819,13 @@ export default function MappedJobs() {
           text-overflow: ellipsis;
         }
 
-        .job-actions { display: flex; gap: 10px; }
-        .btn-apply-redirect {
-          flex: 1;
-          padding: 10px 16px;
-          background: rgba(0, 240, 255, 0.1);
-          border: 1px solid rgba(0, 240, 255, 0.35);
-          color: #00F0FF;
+        .job-actions-vertical { display: flex; flex-direction: column; gap: 8px; }
+        .btn-apply-action {
+          width: 100%;
+          padding: 10px 14px;
+          border-radius: 8px;
           font-size: 11px;
           font-weight: bold;
-          border-radius: 8px;
           cursor: pointer;
           display: flex;
           align-items: center;
@@ -590,21 +833,21 @@ export default function MappedJobs() {
           gap: 6px;
           transition: all 0.2s ease;
         }
-        .btn-apply-redirect:hover { background: #00F0FF; color: #000; box-shadow: 0 0 15px rgba(0, 240, 255, 0.4); }
-        .btn-apply-redirect.applied { background: rgba(16, 185, 129, 0.15); color: #10B981; border-color: rgba(16, 185, 129, 0.4); }
-
-        .btn-external-link {
-          padding: 10px 14px;
-          background: rgba(255, 255, 255, 0.05);
-          border: 1px solid rgba(255, 255, 255, 0.15);
-          color: #fff;
-          border-radius: 8px;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          transition: all 0.2s ease;
+        .btn-apply-action.official {
+          background: rgba(0, 240, 255, 0.1);
+          border: 1px solid rgba(0, 240, 255, 0.35);
+          color: #00F0FF;
         }
-        .btn-external-link:hover { border-color: #00F0FF; color: #00F0FF; }
+        .btn-apply-action.official:hover { background: #00F0FF; color: #000; box-shadow: 0 0 15px rgba(0, 240, 255, 0.4); }
+        
+        .btn-apply-action.platform {
+          background: rgba(139, 92, 246, 0.1);
+          border: 1px solid rgba(139, 92, 246, 0.35);
+          color: #C4B5FD;
+        }
+        .btn-apply-action.platform:hover { background: #8B5CF6; color: #fff; box-shadow: 0 0 15px rgba(139, 92, 246, 0.4); }
+        
+        .btn-apply-action.applied { background: rgba(16, 185, 129, 0.15); color: #10B981; border-color: rgba(16, 185, 129, 0.4); }
 
         .modal-backdrop {
           position: fixed;
@@ -619,7 +862,7 @@ export default function MappedJobs() {
         }
         .apply-modal {
           width: 100%;
-          max-width: 520px;
+          max-width: 540px;
           padding: 32px;
           background: #0D101D;
           border: 1px solid rgba(0, 240, 255, 0.3);
@@ -644,7 +887,7 @@ export default function MappedJobs() {
           color: #00F0FF;
           font-size: 18px;
         }
-        .modal-title-box h2 { font-size: 18px; margin: 0; color: #fff; }
+        .modal-title-box h2 { font-size: 17px; margin: 0; color: #fff; }
         .modal-title-box p { font-size: 12px; color: #00F0FF; margin-top: 2px; }
         .close-modal-btn { background: none; border: none; color: var(--text-muted); cursor: pointer; }
         .close-modal-btn:hover { color: #fff; }
@@ -698,4 +941,3 @@ export default function MappedJobs() {
     </div>
   );
 }
-

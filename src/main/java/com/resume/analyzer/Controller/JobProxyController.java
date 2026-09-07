@@ -38,10 +38,11 @@ public class JobProxyController {
     public ResponseEntity<?> getMappedJobs(@RequestParam String query, @RequestParam(required = false, defaultValue = "United States") String location) {
         long startTime = System.currentTimeMillis();
         String safeQuery = (query == null || query.trim().isEmpty()) ? "Full Stack Engineer" : query.trim();
+        String safeLocation = (location == null || location.trim().isEmpty()) ? "India" : location.trim();
         
-        System.out.println("ApplySphere AI Live Job Generation Initiated for: " + safeQuery);
+        System.out.println("ApplySphere AI Live Job Generation Initiated for: " + safeQuery + " in " + safeLocation);
         
-        List<Map<String, Object>> aiJobs = aiJobSearchService.generateCompanyJobs(safeQuery);
+        List<Map<String, Object>> aiJobs = aiJobSearchService.generateCompanyJobs(safeQuery, safeLocation);
         
         Map<String, Object> response = new java.util.HashMap<>();
         response.put("status", "Neural-Agent-Active");
