@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { 
   Activity, Cpu, Database, Globe, ArrowRight, 
-  TrendingDown, TrendingUp, MessageSquare, X, Zap, Mail, FileText, Sparkles, ShieldCheck
+  TrendingDown, TrendingUp, MessageSquare, X, Zap, Mail, FileText, Sparkles, ShieldCheck, Building
 } from 'lucide-react';
 import ChatInterface from './ChatInterface';
 import { useAuth } from '../auth/hooks/useAuth';
@@ -44,32 +44,32 @@ export default function Dashboard() {
       if (authUser?.name) setUserName(authUser.name);
 
       Promise.all([
-        axios.get('/api/user/me', { headers: { Authorization: `Bearer ${token}` } }),
-        axios.get('/api/resume/all-history', { headers: { Authorization: `Bearer ${token}` } }),
-        axios.get('/api/resume/global-ecosystem', { headers: { Authorization: `Bearer ${token}` } }),
-        axios.get('/api/resume/global-stats', { headers: { Authorization: `Bearer ${token}` } })
+        axios.get('/api/user/me', { headers: { Authorization: `Bearer ${token}` } }).catch(() => ({ data: null })),
+        axios.get('/api/resume/all-history', { headers: { Authorization: `Bearer ${token}` } }).catch(() => ({ data: [] })),
+        axios.get('/api/resume/global-ecosystem', { headers: { Authorization: `Bearer ${token}` } }).catch(() => ({ data: [] })),
+        axios.get('/api/resume/global-stats', { headers: { Authorization: `Bearer ${token}` } }).catch(() => ({ data: {} }))
       ]).then(([userRes, historyRes, ecosystemRes, statsRes]) => {
-        const fetchedName = userRes.data?.name || authUser?.name || 'User';
-        const fetchedHistory = historyRes.data || [];
-        const fetchedEcosystem = ecosystemRes.data || [];
-        const gStats = statsRes.data;
+        const fetchedName = userRes?.data?.name || authUser?.name || 'User';
+        const fetchedHistory = Array.isArray(historyRes?.data) ? historyRes.data : [];
+        const fetchedEcosystem = Array.isArray(ecosystemRes?.data) ? ecosystemRes.data : [];
+        const gStats = statsRes?.data || {};
 
         setUserName(fetchedName);
         setHistory(fetchedHistory);
         setGlobalEcosystem(fetchedEcosystem);
         
         let calculatedTrend = 0;
-        if (fetchedHistory.length >= 2) {
-          const latest = fetchedHistory[0].overallScore;
-          const previous = fetchedHistory[1].overallScore;
+        if (fetchedHistory.length >= 2 && fetchedHistory[0] && fetchedHistory[1]) {
+          const latest = fetchedHistory[0].overallScore || 0;
+          const previous = fetchedHistory[1].overallScore || 0;
           calculatedTrend = previous !== 0 ? Number(((latest - previous) / previous * 100).toFixed(1)) : 0;
         }
 
         const newStats = {
-          avgMatch: gStats.avgMatch || 0,
+          avgMatch: gStats?.avgMatch || 0,
           personalScans: fetchedHistory.length,
-          totalProcessed: gStats.totalProcessed || 0,
-          reach: 60 + (gStats.totalProcessed * 2),
+          totalProcessed: gStats?.totalProcessed || 0,
+          reach: 60 + ((gStats?.totalProcessed || 0) * 2),
           trend: calculatedTrend
         };
 
