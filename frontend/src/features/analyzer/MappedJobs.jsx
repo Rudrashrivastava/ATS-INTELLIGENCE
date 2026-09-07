@@ -287,10 +287,8 @@ export default function MappedJobs() {
             </button>
           )}
         </div>
-      </div>
-
-      {/* USER PREFERENCE & SELECTION SECTIONS */}
-      <div className="user-preferences-panel glass-card">
+      </div>      {/* USER PREFERENCE & SELECTION SECTIONS (EXPANDED HEIGHT-WISE WITH SKEUOMORPHISM & NO SCROLLBARS) */}
+      <div className="user-preferences-panel skeuo-card no-scrollbar">
         
         {/* TARGET ROLE SELECTOR */}
         <div className="preference-block">
@@ -299,12 +297,12 @@ export default function MappedJobs() {
             <span>TARGET ROLE: <strong style={{ color: '#00F0FF' }}>{activeRole}</strong></span>
           </div>
           <div className="pills-and-input-row">
-            <div className="filter-pills custom-scroll">
+            <div className="filter-pills-wrap">
               {rolePresets.map(role => (
                 <button
                   key={role}
                   onClick={() => setActiveRole(role)}
-                  className={`pref-pill ${activeRole === role ? 'active-cyan' : ''}`}
+                  className={`skeuo-button pref-pill ${activeRole === role ? 'active-cyan' : ''}`}
                 >
                   {role}
                 </button>
@@ -316,25 +314,26 @@ export default function MappedJobs() {
                 placeholder="Other Role..."
                 value={customRoleInput}
                 onChange={(e) => setCustomRoleInput(e.target.value)}
+                className="skeuo-input"
               />
-              <button type="submit" className="btn-small-glow">SET</button>
+              <button type="submit" className="skeuo-button btn-small-glow">SET</button>
             </form>
           </div>
         </div>
 
         {/* COUNTRY SELECTOR */}
-        <div className="preference-block" style={{ marginTop: '14px' }}>
+        <div className="preference-block" style={{ marginTop: '16px' }}>
           <div className="preference-header">
             <Compass size={15} color="#8B5CF6" />
             <span>HIRING LOCATION: <strong style={{ color: '#8B5CF6' }}>{selectedCountry}</strong></span>
           </div>
           <div className="pills-and-input-row">
-            <div className="filter-pills custom-scroll">
+            <div className="filter-pills-wrap">
               {countryPresets.map(c => (
                 <button
                   key={c}
                   onClick={() => setSelectedCountry(c)}
-                  className={`pref-pill ${selectedCountry === c ? 'active-violet' : ''}`}
+                  className={`skeuo-button pref-pill ${selectedCountry === c ? 'active-violet' : ''}`}
                 >
                   {c === 'India' ? '🇮🇳 India (Default)' : c}
                 </button>
@@ -346,23 +345,27 @@ export default function MappedJobs() {
                 placeholder="Other Country..."
                 value={customCountryInput}
                 onChange={(e) => setCustomCountryInput(e.target.value)}
+                className="skeuo-input"
               />
-              <button type="submit" className="btn-small-glow">SET</button>
+              <button type="submit" className="skeuo-button btn-small-glow">SET</button>
             </form>
           </div>
         </div>
 
-        {/* WORK MODE & CATEGORY & COMPANY FILTERS */}
-        <div className="secondary-filters-row" style={{ marginTop: '16px', paddingTop: '16px', borderTop: '1px solid rgba(255,255,255,0.06)' }}>
+        {/* WORK MODE & CATEGORY & COMPANY FILTERS (EXPANDED VERTICALLY - NO SCROLLBARS) */}
+        <div className="secondary-filters-grid" style={{ marginTop: '20px', paddingTop: '20px', borderTop: '1px solid rgba(255,255,255,0.08)' }}>
           
-          <div className="filter-group">
-            <span className="filter-label-small"><Navigation size={13} color="#10B981" /> MODE:</span>
-            <div className="filter-pills">
+          <div className="preference-block">
+            <div className="preference-header">
+              <Navigation size={14} color="#10B981" />
+              <span>WORK MODE: <strong style={{ color: '#10B981' }}>{selectedWorkMode}</strong></span>
+            </div>
+            <div className="filter-pills-wrap">
               {workModes.map(mode => (
                 <button
                   key={mode}
                   onClick={() => setSelectedWorkMode(mode)}
-                  className={`mini-pill ${selectedWorkMode === mode ? 'active-emerald' : ''}`}
+                  className={`skeuo-button mini-pill ${selectedWorkMode === mode ? 'active-emerald' : ''}`}
                 >
                   {mode.toUpperCase()}
                 </button>
@@ -370,14 +373,17 @@ export default function MappedJobs() {
             </div>
           </div>
 
-          <div className="filter-group">
-            <span className="filter-label-small"><Layers size={13} color="#8B5CF6" /> CATEGORY:</span>
-            <div className="filter-pills custom-scroll">
+          <div className="preference-block" style={{ marginTop: '16px' }}>
+            <div className="preference-header">
+              <Layers size={14} color="#8B5CF6" />
+              <span>ROLE CATEGORY: <strong style={{ color: '#8B5CF6' }}>{selectedCategory}</strong></span>
+            </div>
+            <div className="filter-pills-wrap">
               {categoriesList.map(cat => (
                 <button
                   key={cat}
                   onClick={() => setSelectedCategory(cat)}
-                  className={`mini-pill ${selectedCategory === cat ? 'active-violet' : ''}`}
+                  className={`skeuo-button mini-pill ${selectedCategory === cat ? 'active-violet' : ''}`}
                 >
                   {cat.toUpperCase()}
                 </button>
@@ -385,24 +391,27 @@ export default function MappedJobs() {
             </div>
           </div>
 
-          <div className="filter-group" style={{ flex: 1, minWidth: '260px' }}>
-            <span className="filter-label-small"><Filter size={13} color="#00F0FF" /> COMPANY:</span>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', width: '100%' }}>
+          <div className="preference-block" style={{ marginTop: '16px' }}>
+            <div className="preference-header">
+              <Filter size={14} color="#00F0FF" />
+              <span>COMPANY FILTER: <strong style={{ color: '#00F0FF' }}>{selectedCompany}</strong></span>
+            </div>
+            <div style={{ display: 'flex', gap: '12px', alignItems: 'center', flexWrap: 'wrap' }}>
               <select 
                 value={selectedCompany} 
                 onChange={(e) => setSelectedCompany(e.target.value)}
-                className="company-dropdown-select"
+                className="company-dropdown-select skeuo-input"
               >
                 {allCompaniesList.map(comp => (
                   <option key={comp} value={comp}>{comp.toUpperCase()}</option>
                 ))}
               </select>
-              <div className="filter-pills custom-scroll" style={{ flex: 1 }}>
+              <div className="filter-pills-wrap" style={{ flex: 1 }}>
                 {popularCompanies.map(comp => (
                   <button
                     key={comp}
                     onClick={() => setSelectedCompany(comp)}
-                    className={`mini-pill ${selectedCompany === comp ? 'active-cyan' : ''}`}
+                    className={`skeuo-button mini-pill ${selectedCompany === comp ? 'active-cyan' : ''}`}
                   >
                     {comp.toUpperCase()}
                   </button>
@@ -416,7 +425,7 @@ export default function MappedJobs() {
       </div>
 
       {/* OPENINGS SUMMARY BANNER */}
-      <div className="openings-summary-banner glass-card">
+      <div className="openings-summary-banner glass-card skeuo-card">
         <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
           <Building size={20} color="#00F0FF" />
           <span style={{ fontSize: '13px', fontWeight: 'bold' }}>
@@ -430,16 +439,16 @@ export default function MappedJobs() {
 
       {/* CONTENT AREA */}
       {loading ? (
-        <div className="loading-state glass-card">
+        <div className="loading-state glass-card skeuo-card">
           <Activity className="pulse-slow" size={48} color="#00F0FF" />
           <p>FETCHING {activeRole.toUpperCase()} JOBS IN {selectedCountry.toUpperCase()}...</p>
         </div>
       ) : filteredJobs.length === 0 ? (
-        <div className="empty-jobs glass-card">
+        <div className="empty-jobs glass-card skeuo-card">
           <Building size={48} color="#00F0FF" />
           <h3>No positions matching "{search || selectedCompany || selectedWorkMode}"</h3>
           <p>Try clearing search text or resetting company / work mode filters.</p>
-          <button onClick={() => { setSearch(''); setSelectedCompany('All'); setSelectedCategory('All'); setSelectedWorkMode('All'); }} className="btn-glow" style={{ marginTop: '16px', padding: '10px 24px' }}>
+          <button onClick={() => { setSearch(''); setSelectedCompany('All'); setSelectedCategory('All'); setSelectedWorkMode('All'); }} className="btn-glow skeuo-button" style={{ marginTop: '16px', padding: '10px 24px' }}>
             RESET ALL FILTERS
           </button>
         </div>
@@ -453,7 +462,7 @@ export default function MappedJobs() {
             const isOfficialApplied = appliedJobs[officialKey];
 
             return (
-              <div key={idx} className={`job-card glass-card hover-glow ${isOfficialApplied ? 'redirected-card' : ''}`}>
+              <div key={idx} className={`job-card skeuo-card hover-glow ${isOfficialApplied ? 'redirected-card' : ''}`}>
                 
                 <div className="job-card-top">
                   <div className="company-logo-avatar">
@@ -483,7 +492,7 @@ export default function MappedJobs() {
                 {/* PRIMARY OFFICIAL CAREER SITE BUTTON */}
                 <button 
                   onClick={() => handleOpenPlatform('official', 'Official Career Portal', job)}
-                  className={`btn-primary-apply ${isOfficialApplied ? 'applied' : ''}`}
+                  className={`btn-primary-apply skeuo-button ${isOfficialApplied ? 'applied' : ''}`}
                 >
                   {isOfficialApplied ? (
                     <><CheckCircle size={15} color="#10B981" /> CAREER SITE OPENED ↗</>
@@ -499,7 +508,7 @@ export default function MappedJobs() {
                     
                     <button 
                       onClick={() => handleOpenPlatform('linkedin', 'LinkedIn Jobs', job)}
-                      className={`platform-btn linkedin ${appliedJobs[`${jobTitle}-${companyName}-linkedin`] ? 'applied' : ''}`}
+                      className={`platform-btn skeuo-button linkedin ${appliedJobs[`${jobTitle}-${companyName}-linkedin`] ? 'applied' : ''}`}
                       title="Apply via LinkedIn Jobs"
                     >
                       <span className="platform-icon">💼</span> LinkedIn
@@ -507,7 +516,7 @@ export default function MappedJobs() {
 
                     <button 
                       onClick={() => handleOpenPlatform('naukri', 'Naukri.com', job)}
-                      className={`platform-btn naukri ${appliedJobs[`${jobTitle}-${companyName}-naukri`] ? 'applied' : ''}`}
+                      className={`platform-btn skeuo-button naukri ${appliedJobs[`${jobTitle}-${companyName}-naukri`] ? 'applied' : ''}`}
                       title="Apply via Naukri.com"
                     >
                       <span className="platform-icon">🇮🇳</span> Naukri
@@ -515,7 +524,7 @@ export default function MappedJobs() {
 
                     <button 
                       onClick={() => handleOpenPlatform('indeed', 'Indeed Jobs', job)}
-                      className={`platform-btn indeed ${appliedJobs[`${jobTitle}-${companyName}-indeed`] ? 'applied' : ''}`}
+                      className={`platform-btn skeuo-button indeed ${appliedJobs[`${jobTitle}-${companyName}-indeed`] ? 'applied' : ''}`}
                       title="Apply via Indeed"
                     >
                       <span className="platform-icon">🌐</span> Indeed
@@ -523,7 +532,7 @@ export default function MappedJobs() {
 
                     <button 
                       onClick={() => handleOpenPlatform('glassdoor', 'Glassdoor', job)}
-                      className={`platform-btn glassdoor ${appliedJobs[`${jobTitle}-${companyName}-glassdoor`] ? 'applied' : ''}`}
+                      className={`platform-btn skeuo-button glassdoor ${appliedJobs[`${jobTitle}-${companyName}-glassdoor`] ? 'applied' : ''}`}
                       title="Apply via Glassdoor"
                     >
                       <span className="platform-icon">🟢</span> Glassdoor
@@ -531,7 +540,7 @@ export default function MappedJobs() {
 
                     <button 
                       onClick={() => handleOpenPlatform('wellfound', 'Wellfound / AngelList', job)}
-                      className={`platform-btn wellfound ${appliedJobs[`${jobTitle}-${companyName}-wellfound`] ? 'applied' : ''}`}
+                      className={`platform-btn skeuo-button wellfound ${appliedJobs[`${jobTitle}-${companyName}-wellfound`] ? 'applied' : ''}`}
                       title="Apply via Wellfound / Startup Jobs"
                     >
                       <span className="platform-icon">🚀</span> Wellfound
@@ -539,7 +548,7 @@ export default function MappedJobs() {
 
                     <button 
                       onClick={() => handleOpenPlatform('googlejobs', 'Google Jobs', job)}
-                      className={`platform-btn googlejobs ${appliedJobs[`${jobTitle}-${companyName}-googlejobs`] ? 'applied' : ''}`}
+                      className={`platform-btn skeuo-button googlejobs ${appliedJobs[`${jobTitle}-${companyName}-googlejobs`] ? 'applied' : ''}`}
                       title="Apply via Google Jobs Search"
                     >
                       <span className="platform-icon">🔍</span> Google Jobs
@@ -554,7 +563,7 @@ export default function MappedJobs() {
         </div>
       )}
 
-      {/* RESPONSIVE & HIGH-TECH STYLES */}
+      {/* RESPONSIVE & SKEUOMORPHIC STYLES WITH ZERO SCROLLBARS */}
       <style dangerouslySetInnerHTML={{ __html: `
         .mapped-jobs-container {
           padding: 24px 32px;
@@ -636,126 +645,105 @@ export default function MappedJobs() {
           font-size: 13px;
         }
 
-        /* USER PREFERENCES PANEL STYLES */
+        /* SKEUOMORPHIC USER PREFERENCES PANEL (EXPANDED VERTICALLY) */
         .user-preferences-panel {
-          padding: 20px 24px;
-          background: rgba(13, 16, 29, 0.7);
-          border-radius: 14px;
-          border: 1px solid rgba(0, 240, 255, 0.15);
+          padding: 24px;
           display: flex;
           flex-direction: column;
+          gap: 16px;
           width: 100%;
           box-sizing: border-box;
-          max-width: 100%;
-          overflow: hidden;
         }
-        .preference-block { display: flex; flex-direction: column; gap: 8px; width: 100%; }
+        .preference-block { display: flex; flex-direction: column; gap: 10px; width: 100%; }
         .preference-header { font-size: 11px; font-weight: bold; color: var(--text-muted); letter-spacing: 1px; display: flex; align-items: center; gap: 8px; }
-        .pills-and-input-row { display: flex; align-items: center; gap: 12px; width: 100%; max-width: 100%; overflow: hidden; }
+        .pills-and-input-row { display: flex; align-items: flex-start; gap: 16px; width: 100%; flex-wrap: wrap; }
         
-        .filter-pills {
+        .filter-pills-wrap {
           display: flex;
           align-items: center;
           gap: 8px;
-          overflow-x: auto;
-          white-space: nowrap;
-          max-width: 100%;
-          padding-bottom: 4px;
-          scrollbar-width: thin;
-          scrollbar-color: #00F0FF rgba(255,255,255,0.05);
+          flex-wrap: wrap;
+          flex: 1;
         }
-        .filter-pills::-webkit-scrollbar { height: 4px; }
-        .filter-pills::-webkit-scrollbar-thumb { background: #00F0FF; border-radius: 4px; }
 
         .pref-pill {
-          padding: 6px 14px;
-          border-radius: 8px;
+          padding: 8px 16px;
+          border-radius: 10px;
           font-size: 12px;
           font-weight: 600;
-          background: rgba(255,255,255,0.04);
-          border: 1px solid rgba(255,255,255,0.08);
-          color: #CBD5E1;
-          cursor: pointer;
-          flex-shrink: 0;
-          transition: all 0.2s ease;
         }
-        .pref-pill:hover { border-color: rgba(0, 240, 255, 0.4); color: #fff; }
         .pref-pill.active-cyan {
-          background: rgba(0, 240, 255, 0.15);
+          background: linear-gradient(180deg, rgba(0, 240, 255, 0.25) 0%, rgba(0, 240, 255, 0.08) 100%);
           color: #00F0FF;
           border-color: #00F0FF;
-          box-shadow: 0 0 12px rgba(0, 240, 255, 0.3);
+          box-shadow: inset 0 3px 6px rgba(0, 0, 0, 0.7), 0 0 15px rgba(0, 240, 255, 0.4);
         }
         .pref-pill.active-violet {
-          background: rgba(139, 92, 246, 0.2);
+          background: linear-gradient(180deg, rgba(139, 92, 246, 0.3) 0%, rgba(139, 92, 246, 0.1) 100%);
           color: #C4B5FD;
           border-color: #8B5CF6;
-          box-shadow: 0 0 12px rgba(139, 92, 246, 0.35);
+          box-shadow: inset 0 3px 6px rgba(0, 0, 0, 0.7), 0 0 15px rgba(139, 92, 246, 0.4);
         }
 
-        .custom-input-form { display: flex; align-items: center; gap: 6px; flex-shrink: 0; }
+        .custom-input-form { display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
         .custom-input-form input {
-          padding: 6px 12px;
-          background: rgba(0,0,0,0.3);
-          border: 1px solid rgba(255,255,255,0.15);
-          border-radius: 6px;
-          color: #fff;
+          padding: 8px 14px;
           font-size: 11px;
-          width: 120px;
+          width: 140px;
           outline: none;
         }
-        .custom-input-form input:focus { border-color: #00F0FF; }
         .btn-small-glow {
-          padding: 6px 12px;
-          background: rgba(0, 240, 255, 0.15);
-          border: 1px solid #00F0FF;
-          color: #00F0FF;
-          border-radius: 6px;
+          padding: 8px 14px;
           font-size: 10px;
           font-weight: bold;
-          cursor: pointer;
+          color: #00F0FF;
+          border-radius: 8px;
         }
 
-        .secondary-filters-row { display: flex; gap: 16px; align-items: center; width: 100%; box-sizing: border-box; }
-        .filter-group { display: flex; align-items: center; gap: 8px; min-width: 0; }
-        .filter-label-small { font-size: 10px; font-weight: bold; color: var(--text-muted); letter-spacing: 1px; display: flex; align-items: center; gap: 4px; flex-shrink: 0; }
+        .secondary-filters-grid { display: flex; flex-direction: column; gap: 16px; width: 100%; box-sizing: border-box; }
         
         .company-dropdown-select {
-          padding: 5px 10px;
-          background: #0D101D;
-          border: 1px solid rgba(0, 240, 255, 0.3);
-          border-radius: 6px;
-          color: #00F0FF;
+          padding: 8px 12px;
           font-size: 11px;
           font-weight: bold;
+          color: #00F0FF;
           outline: none;
           cursor: pointer;
           flex-shrink: 0;
+          border-radius: 8px;
         }
 
         .mini-pill {
-          padding: 4px 10px;
-          border-radius: 6px;
-          font-size: 10px;
+          padding: 6px 12px;
+          border-radius: 8px;
+          font-size: 10.5px;
           font-weight: bold;
-          background: rgba(255,255,255,0.03);
-          border: 1px solid rgba(255,255,255,0.08);
-          color: #94A3B8;
-          cursor: pointer;
-          flex-shrink: 0;
         }
-        .mini-pill.active-emerald { background: rgba(16, 185, 129, 0.2); color: #10B981; border-color: #10B981; }
-        .mini-pill.active-violet { background: rgba(139, 92, 246, 0.2); color: #C4B5FD; border-color: #8B5CF6; }
-        .mini-pill.active-cyan { background: rgba(0, 240, 255, 0.2); color: #00F0FF; border-color: #00F0FF; }
+        .mini-pill.active-emerald {
+          background: linear-gradient(180deg, rgba(16, 185, 129, 0.3) 0%, rgba(16, 185, 129, 0.1) 100%);
+          color: #10B981;
+          border-color: #10B981;
+          box-shadow: inset 0 3px 6px rgba(0, 0, 0, 0.7), 0 0 12px rgba(16, 185, 129, 0.4);
+        }
+        .mini-pill.active-violet {
+          background: linear-gradient(180deg, rgba(139, 92, 246, 0.3) 0%, rgba(139, 92, 246, 0.1) 100%);
+          color: #C4B5FD;
+          border-color: #8B5CF6;
+          box-shadow: inset 0 3px 6px rgba(0, 0, 0, 0.7), 0 0 12px rgba(139, 92, 246, 0.4);
+        }
+        .mini-pill.active-cyan {
+          background: linear-gradient(180deg, rgba(0, 240, 255, 0.25) 0%, rgba(0, 240, 255, 0.08) 100%);
+          color: #00F0FF;
+          border-color: #00F0FF;
+          box-shadow: inset 0 3px 6px rgba(0, 0, 0, 0.7), 0 0 12px rgba(0, 240, 255, 0.4);
+        }
 
         .openings-summary-banner {
           display: flex;
           justify-content: space-between;
           align-items: center;
-          padding: 12px 20px;
-          background: rgba(0, 240, 255, 0.04);
-          border: 1px solid rgba(0, 240, 255, 0.15);
-          border-radius: 10px;
+          padding: 14px 24px;
+          border-radius: 12px;
           width: 100%;
           box-sizing: border-box;
         }
@@ -768,22 +756,18 @@ export default function MappedJobs() {
           box-sizing: border-box;
         }
         .job-card {
-          padding: 22px;
-          background: rgba(13, 16, 29, 0.65);
-          border: 1px solid rgba(255, 255, 255, 0.08);
-          border-radius: 14px;
+          padding: 24px;
           display: flex;
           flex-direction: column;
-          gap: 14px;
+          gap: 16px;
           transition: all 0.25 ease;
           position: relative;
           width: 100%;
           box-sizing: border-box;
         }
         .job-card:hover {
-          border-color: rgba(0, 240, 255, 0.35);
+          border-color: rgba(0, 240, 255, 0.4);
           transform: translateY(-3px);
-          box-shadow: 0 12px 30px rgba(0, 240, 255, 0.08);
         }
         .job-card.redirected-card {
           border-color: rgba(16, 185, 129, 0.4);
@@ -792,15 +776,16 @@ export default function MappedJobs() {
 
         .job-card-top { display: flex; gap: 14px; align-items: flex-start; }
         .company-logo-avatar {
-          width: 44px;
-          height: 44px;
-          border-radius: 10px;
-          background: linear-gradient(135deg, rgba(0, 240, 255, 0.2), rgba(139, 92, 246, 0.2));
+          width: 46px;
+          height: 46px;
+          border-radius: 12px;
+          background: linear-gradient(145deg, rgba(0, 240, 255, 0.2), rgba(139, 92, 246, 0.2));
           border: 1px solid rgba(0, 240, 255, 0.3);
+          box-shadow: inset 0 1px 0 rgba(255,255,255,0.2), 0 4px 8px rgba(0,0,0,0.5);
           display: flex;
           align-items: center;
           justify-content: center;
-          font-size: 20px;
+          font-size: 22px;
           font-weight: bold;
           color: #00F0FF;
           flex-shrink: 0;
@@ -820,7 +805,7 @@ export default function MappedJobs() {
         .job-tags-row { display: flex; gap: 8px; flex-wrap: wrap; }
         .tag-pill {
           padding: 4px 10px;
-          border-radius: 4px;
+          border-radius: 6px;
           font-size: 11px;
           background: rgba(255, 255, 255, 0.04);
           color: var(--text-muted);
@@ -833,45 +818,32 @@ export default function MappedJobs() {
         .job-desc {
           font-size: 12px;
           color: var(--text-muted);
-          line-height: 1.5;
-          height: 52px;
+          line-height: 1.55;
+          height: 54px;
           overflow: hidden;
           text-overflow: ellipsis;
         }
 
         .btn-primary-apply {
           width: 100%;
-          padding: 10px 14px;
-          border-radius: 8px;
-          font-size: 11px;
+          padding: 12px 16px;
+          border-radius: 10px;
+          font-size: 11.5px;
           font-weight: bold;
           cursor: pointer;
           display: flex;
           align-items: center;
           justify-content: center;
           gap: 6px;
-          background: linear-gradient(135deg, rgba(0, 240, 255, 0.15), rgba(139, 92, 246, 0.15));
-          border: 1px solid #00F0FF;
           color: #00F0FF;
-          transition: all 0.2s ease;
-        }
-        .btn-primary-apply:hover {
-          background: #00F0FF;
-          color: #000;
-          box-shadow: 0 0 15px rgba(0, 240, 255, 0.4);
-        }
-        .btn-primary-apply.applied {
-          background: rgba(16, 185, 129, 0.15);
-          color: #10B981;
-          border-color: rgba(16, 185, 129, 0.4);
         }
 
         .platforms-toolbar {
           display: flex;
           flex-direction: column;
           gap: 8px;
-          padding-top: 10px;
-          border-top: 1px solid rgba(255, 255, 255, 0.06);
+          padding-top: 12px;
+          border-top: 1px solid rgba(255, 255, 255, 0.08);
         }
         .platforms-label { font-size: 9px; font-weight: bold; color: #8B5CF6; letter-spacing: 1px; display: flex; align-items: center; gap: 4px; }
         .platform-buttons-grid {
@@ -880,11 +852,8 @@ export default function MappedJobs() {
           gap: 6px;
         }
         .platform-btn {
-          padding: 6px 8px;
-          background: rgba(255, 255, 255, 0.03);
-          border: 1px solid rgba(255, 255, 255, 0.08);
-          border-radius: 6px;
-          color: #CBD5E1;
+          padding: 7px 10px;
+          border-radius: 8px;
           font-size: 10px;
           font-weight: 600;
           cursor: pointer;
@@ -892,27 +861,7 @@ export default function MappedJobs() {
           align-items: center;
           justify-content: center;
           gap: 4px;
-          transition: all 0.2s ease;
         }
-        .platform-btn:hover {
-          background: rgba(139, 92, 246, 0.15);
-          border-color: #8B5CF6;
-          color: #fff;
-        }
-        .platform-btn.linkedin:hover { background: rgba(10, 102, 194, 0.2); border-color: #0A66C2; color: #70B5F9; }
-        .platform-btn.naukri:hover { background: rgba(255, 117, 24, 0.2); border-color: #FF7518; color: #FF9D54; }
-        .platform-btn.indeed:hover { background: rgba(0, 58, 143, 0.2); border-color: #2164f3; color: #70A2FF; }
-        .platform-btn.glassdoor:hover { background: rgba(12, 170, 65, 0.2); border-color: #0CAA41; color: #52E583; }
-        .platform-btn.wellfound:hover { background: rgba(255, 0, 0, 0.15); border-color: #FF4F4F; color: #FF8585; }
-        .platform-btn.googlejobs:hover { background: rgba(66, 133, 244, 0.2); border-color: #4285F4; color: #82B1FF; }
-
-        .platform-btn.applied {
-          border-color: #10B981;
-          color: #10B981;
-          background: rgba(16, 185, 129, 0.1);
-        }
-
-        .platform-icon { font-size: 11px; }
 
         .loading-state, .empty-jobs {
           padding: 80px 20px;
@@ -927,3 +876,4 @@ export default function MappedJobs() {
     </div>
   );
 }
+

@@ -1,12 +1,12 @@
 import { useState, useEffect, useRef } from 'react';
 import axios from 'axios';
-import { Send, User, Bot, Loader2, X, Zap, Activity } from 'lucide-react';
+import { Send, User, Bot, Loader2, X, Zap, Activity, Sparkles } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
 export default function ChatInterface({ onClose, token }) {
   const navigate = useNavigate();
   const [messages, setMessages] = useState([
-    { id: 1, text: "Hello! I'm your Zora Nexus AI Assistant. How can I help you optimize your career trajectory today?", isBot: true }
+    { id: 1, text: "Hello! I'm your Zora Neural AI Assistant. How can I help you optimize your career trajectory today?", isBot: true }
   ]);
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
@@ -18,7 +18,6 @@ export default function ChatInterface({ onClose, token }) {
       const saved = sessionStorage.getItem('active_trajectory');
       if (!saved) return null;
       const parsed = JSON.parse(saved);
-      // Keep payload lightweight to prevent 413 Payload Too Large
       return {
         role: parsed.primaryRole || 'Developer',
         score: parsed.overallScore || 0,
@@ -59,7 +58,7 @@ export default function ChatInterface({ onClose, token }) {
         id: Date.now() + 1, 
         text: response.data.response || "I've analyzed your query.", 
         isBot: true,
-        model: response.data.model || 'Groq Neural'
+        model: response.data.model || 'Groq Neural Engine'
       };
       setMessages(prev => [...prev, botMessage]);
     } catch (err) {
@@ -75,66 +74,107 @@ export default function ChatInterface({ onClose, token }) {
   };
 
   return (
-    <div className="animate-slide-up" style={{
-      position: 'fixed', bottom: '95px', right: '24px',
-      width: '380px', height: '520px', zIndex: 100000,
+    <div className="animate-slide-up skeuo-chat-window no-scrollbar" style={{
+      position: 'fixed', bottom: '90px', right: '24px',
+      width: '400px', height: '540px', zIndex: 100000,
       display: 'flex', flexDirection: 'column',
-      background: 'rgba(18, 20, 32, 0.95)',
-      backdropFilter: 'blur(20px)',
+      background: 'linear-gradient(165deg, #131726 0%, #080a12 100%)',
       borderRadius: '20px',
-      border: '1px solid rgba(0, 229, 255, 0.3)',
-      boxShadow: '0 20px 50px rgba(0, 229, 255, 0.25)',
+      border: '1px solid rgba(0, 240, 255, 0.3)',
+      borderTopColor: 'rgba(255, 255, 255, 0.25)',
+      borderBottomColor: 'rgba(0, 0, 0, 0.9)',
+      boxShadow: '0 20px 50px rgba(0, 0, 0, 0.8), inset 0 1px 0 rgba(255, 255, 255, 0.15)',
       overflow: 'hidden'
     }}>
-      {/* Header */}
+      {/* 3D Metallic Header */}
       <div style={{
-        padding: '16px 20px', 
+        padding: '14px 20px', 
         borderBottom: '1px solid rgba(255, 255, 255, 0.08)',
+        borderBottomColor: 'rgba(0, 0, 0, 0.6)',
         display: 'flex', justifyContent: 'space-between', alignItems: 'center',
-        background: 'rgba(0, 229, 255, 0.03)'
+        background: 'linear-gradient(180deg, rgba(0, 240, 255, 0.12) 0%, rgba(0, 240, 255, 0.02) 100%)',
+        boxShadow: 'inset 0 1px 0 rgba(255, 255, 255, 0.2), 0 3px 10px rgba(0,0,0,0.4)'
       }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-          <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#00E5FF', boxShadow: '0 0 10px #00E5FF' }}></div>
-          <span style={{ fontWeight: 'bold', fontSize: '13px', letterSpacing: '1.5px', color: '#fff' }}>NEURAL ASSISTANT</span>
+          <div style={{
+            width: '10px', height: '10px', borderRadius: '50%',
+            background: '#00F0FF',
+            boxShadow: '0 0 10px #00F0FF, 0 0 4px #FFF'
+          }}></div>
+          <span style={{ fontWeight: 'bold', fontSize: '12px', letterSpacing: '1.5px', color: '#FFF', textShadow: '0 1px 2px rgba(0,0,0,0.8)' }}>
+            NEURAL ASSISTANT
+          </span>
         </div>
-        <button onClick={onClose} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'rgba(255,255,255,0.6)', padding: '4px' }}>
-          <X size={18} />
+        <button 
+          onClick={onClose} 
+          className="skeuo-button"
+          style={{ padding: '6px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+        >
+          <X size={14} color="#CBD5E1" />
         </button>
       </div>
 
-      {/* Messages */}
-      <div ref={scrollRef} className="custom-scroll" style={{ flex: 1, overflowY: 'auto', padding: '16px', display: 'flex', flexDirection: 'column', gap: '14px' }}>
+      {/* Messages Area - NO SCROLLBAR */}
+      <div 
+        ref={scrollRef} 
+        className="no-scrollbar" 
+        style={{ 
+          flex: 1, 
+          overflowY: 'auto', 
+          padding: '18px', 
+          display: 'flex', 
+          flexDirection: 'column', 
+          gap: '16px',
+          scrollbarWidth: 'none',
+          msOverflowStyle: 'none',
+          background: '#070912',
+          boxShadow: 'inset 0 6px 15px rgba(0, 0, 0, 0.7)'
+        }}
+      >
         {messages.map(msg => (
           <div key={msg.id} style={{
             alignSelf: msg.isBot ? 'flex-start' : 'flex-end',
-            maxWidth: '85%', display: 'flex', gap: '10px',
+            maxWidth: '86%', display: 'flex', gap: '10px',
             flexDirection: msg.isBot ? 'row' : 'row-reverse'
           }}>
             <div style={{
-              width: '28px', height: '28px', borderRadius: '50%',
-              background: msg.isBot ? 'rgba(0, 229, 255, 0.15)' : 'linear-gradient(135deg, #00E5FF, #0072FF)',
-              border: msg.isBot ? '1px solid #00E5FF' : 'none',
+              width: '30px', height: '30px', borderRadius: '50%',
+              background: msg.isBot 
+                ? 'linear-gradient(145deg, rgba(0, 240, 255, 0.2), rgba(139, 92, 246, 0.2))' 
+                : 'linear-gradient(145deg, #00F0FF, #0091EA)',
+              border: msg.isBot ? '1px solid #00F0FF' : 'none',
+              boxShadow: msg.isBot 
+                ? '0 3px 8px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.3)' 
+                : '0 4px 10px rgba(0, 240, 255, 0.4)',
               display: 'flex', alignItems: 'center', justifyContent: 'center',
               flexShrink: 0, marginTop: '2px'
             }}>
-              {msg.isBot ? <Bot size={14} color="#00E5FF" /> : <User size={14} color="#000" />}
+              {msg.isBot ? <Bot size={15} color="#00F0FF" /> : <User size={15} color="#000" />}
             </div>
+
             <div style={{
-              padding: '12px 16px', borderRadius: '16px',
-              borderTopLeftRadius: msg.isBot ? '2px' : '16px',
-              borderTopRightRadius: msg.isBot ? '16px' : '2px',
-              background: msg.isBot ? 'rgba(255, 255, 255, 0.06)' : 'linear-gradient(135deg, #00E5FF 0%, #0072FF 100%)',
-              color: msg.isBot ? '#fff' : '#000',
-              fontSize: '13px', lineHeight: '1.5', fontWeight: msg.isBot ? 'normal' : '600',
-              border: msg.isBot ? '1px solid rgba(255, 255, 255, 0.1)' : 'none',
-              boxShadow: msg.isBot ? 'none' : '0 4px 15px rgba(0, 229, 255, 0.3)'
+              padding: '12px 16px', 
+              borderRadius: '16px',
+              borderTopLeftRadius: msg.isBot ? '3px' : '16px',
+              borderTopRightRadius: msg.isBot ? '16px' : '3px',
+              background: msg.isBot 
+                ? 'linear-gradient(165deg, rgba(255, 255, 255, 0.08) 0%, rgba(255, 255, 255, 0.02) 100%)' 
+                : 'linear-gradient(165deg, #00F0FF 0%, #0072FF 100%)',
+              color: msg.isBot ? '#F8FAFC' : '#000',
+              fontSize: '12.5px', lineHeight: '1.55', 
+              fontWeight: msg.isBot ? 'normal' : '600',
+              border: msg.isBot ? '1px solid rgba(255, 255, 255, 0.12)' : 'none',
+              borderTopColor: msg.isBot ? 'rgba(255, 255, 255, 0.2)' : 'none',
+              boxShadow: msg.isBot 
+                ? '0 4px 12px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.1)' 
+                : '0 6px 20px rgba(0, 240, 255, 0.35)'
             }}>
               <div style={{ whiteSpace: 'pre-wrap', wordBreak: 'break-word' }}>{msg.text}</div>
               {msg.model && (
                 <div style={{
                   marginTop: '6px', fontSize: '9px', fontWeight: 'bold', 
-                  opacity: 0.8, display: 'flex', alignItems: 'center', gap: '4px',
-                  color: '#00E5FF', letterSpacing: '0.5px'
+                  display: 'flex', alignItems: 'center', gap: '4px',
+                  color: '#00F0FF', letterSpacing: '0.5px'
                 }}>
                    <Activity size={10} /> {msg.model.toUpperCase()}
                 </div>
@@ -144,8 +184,8 @@ export default function ChatInterface({ onClose, token }) {
         ))}
         {loading && (
           <div style={{ alignSelf: 'flex-start', display: 'flex', gap: '10px', alignItems: 'center' }}>
-            <div style={{ width: '28px', height: '28px', borderRadius: '50%', background: 'rgba(0, 229, 255, 0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', border: '1px solid #00E5FF' }}>
-              <Loader2 size={14} color="#00E5FF" className="spinning" />
+            <div style={{ width: '28px', height: '28px', borderRadius: '50%', background: 'rgba(0, 240, 255, 0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', border: '1px solid #00F0FF' }}>
+              <Loader2 size={14} color="#00F0FF" className="spinning" />
             </div>
             <span style={{ fontSize: '11px', color: 'rgba(255,255,255,0.6)' }}>Neural Agent processing...</span>
           </div>
@@ -153,24 +193,34 @@ export default function ChatInterface({ onClose, token }) {
       </div>
 
       {/* Action Shortcut */}
-      <div style={{ padding: '8px 16px', background: 'rgba(0, 229, 255, 0.04)', display: 'flex', alignItems: 'center', justifyContent: 'center', borderTop: '1px solid rgba(255, 255, 255, 0.05)' }}>
+      <div style={{ 
+        padding: '8px 16px', 
+        background: 'linear-gradient(180deg, rgba(0, 240, 255, 0.05) 0%, rgba(0, 240, 255, 0.01) 100%)', 
+        display: 'flex', alignItems: 'center', justifyContent: 'center', 
+        borderTop: '1px solid rgba(255, 255, 255, 0.06)' 
+      }}>
          <button 
            onClick={() => navigate('/analyzer')}
-           className="btn-glow" 
-           style={{ fontSize: '10px', padding: '6px 14px', display: 'flex', alignItems: 'center', gap: '6px', border: 'none', cursor: 'pointer' }}
+           className="skeuo-button" 
+           style={{ fontSize: '10px', padding: '6px 14px', borderRadius: '6px', display: 'flex', alignItems: 'center', gap: '6px', fontWeight: 'bold', letterSpacing: '1px' }}
          >
-           <Zap size={12} fill="currentColor" /> START NEW SCAN
+           <Zap size={12} color="#00F0FF" fill="currentColor" /> START NEW SCAN
          </button>
       </div>
 
-      {/* Input */}
-      <div style={{ padding: '16px', borderTop: '1px solid rgba(255, 255, 255, 0.08)' }}>
+      {/* Inset 3D Input Area */}
+      <div style={{ 
+        padding: '14px 16px', 
+        background: '#0B0D16', 
+        borderTop: '1px solid rgba(255, 255, 255, 0.08)',
+        boxShadow: 'inset 0 2px 6px rgba(0,0,0,0.6)'
+      }}>
         <div style={{ position: 'relative' }}>
           <input
             type="text"
-            className="glass-input"
+            className="skeuo-input"
             placeholder="Ask AI Assistant..."
-            style={{ paddingRight: '45px', width: '100%', fontSize: '13px', borderRadius: '12px' }}
+            style={{ padding: '10px 45px 10px 14px', width: '100%', fontSize: '12.5px' }}
             value={input}
             onChange={e => setInput(e.target.value)}
             onKeyPress={e => e.key === 'Enter' && handleSend()}
@@ -179,12 +229,13 @@ export default function ChatInterface({ onClose, token }) {
             onClick={handleSend}
             disabled={loading}
             style={{
-              position: 'absolute', right: '10px', top: '50%',
+              position: 'absolute', right: '8px', top: '50%',
               transform: 'translateY(-50%)', background: 'none',
-              border: 'none', color: '#00E5FF', cursor: 'pointer'
+              border: 'none', color: '#00F0FF', cursor: 'pointer',
+              padding: '6px', display: 'flex', alignItems: 'center'
             }}
           >
-            <Send size={18} />
+            <Send size={16} />
           </button>
         </div>
       </div>
