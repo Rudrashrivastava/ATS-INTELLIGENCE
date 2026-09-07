@@ -6,7 +6,7 @@ import { useNavigate } from 'react-router-dom';
 export default function ChatInterface({ onClose, token }) {
   const navigate = useNavigate();
   const [messages, setMessages] = useState([
-    { id: 1, text: "Hello! I'm your Neural ATS Assistant. How can I help you optimize your career trajectory today?", isBot: true }
+    { id: 1, text: "Hello! I'm your Zora Nexus AI Assistant. How can I help you optimize your career trajectory today?", isBot: true }
   ]);
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);

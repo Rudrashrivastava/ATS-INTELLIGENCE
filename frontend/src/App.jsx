@@ -40,8 +40,8 @@ function AppContent() {
           padding: '0 40px'
         }}>
           <Link to="/" className="nav-brand" style={{textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '12px'}}>
-            <Zap size={24} color="#00E5FF" />
-            <span style={{color: '#00E5FF', fontWeight: 'bold', fontSize: '20px', letterSpacing: '1px'}}>ATS INTELLIGENCE</span>
+            <img src="/favicon.svg" alt="Zora Nexus Logo" style={{ width: '34px', height: '34px', filter: 'drop-shadow(0 0 10px rgba(0, 229, 255, 0.6))' }} />
+            <span style={{color: '#00E5FF', fontWeight: 'bold', fontSize: '20px', letterSpacing: '1.5px'}}>ZORA NEXUS</span>
           </Link>
           
           <div style={{display: 'flex', gap: '40px', alignItems: 'center'}}>
