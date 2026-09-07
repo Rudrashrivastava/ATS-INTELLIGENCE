@@ -4,7 +4,8 @@ target/
 .git/
 .gitignore
 *.log
-frontend/
+frontend/node_modules/
+frontend/dist/
 Dockerfile
 README.md
 NOTES.md
