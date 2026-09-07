@@ -1,17 +1,18 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Montserrat:wght@400;600;700&family=JetBrains+Mono:wght@400;600&display=swap');
 
 :root {
-  --bg-color: #0f111a;
-  --surface: #1a1d27;
-  --surface-hover: #232736;
+  --bg-color: #06070c;
+  --surface: #0f111a;
+  --surface-hover: #171a26;
   --primary: #00E5FF;
-  --primary-glow: rgba(0, 229, 255, 0.3);
-  --secondary: #D500F9;
-  --secondary-glow: rgba(213, 0, 249, 0.3);
+  --primary-glow: rgba(0, 229, 255, 0.4);
+  --secondary: #E040FB;
+  --secondary-glow: rgba(224, 64, 251, 0.4);
+  --accent-purple: #7C4DFF;
   --error: #FF1744;
   --text-main: #FFFFFF;
-  --text-muted: #8A93A6;
-  --glass-border: rgba(255, 255, 255, 0.05);
+  --text-muted: #94A3B8;
+  --glass-border: rgba(0, 229, 255, 0.12);
 }
 
 * {
@@ -20,23 +21,25 @@
   box-sizing: border-box;
 }
 
-/* Hide scrollbars globally */
 html, body {
-  scrollbar-width: none; /* Firefox */
-  -ms-overflow-style: none; /* IE and Edge */
+  scrollbar-width: none;
+  -ms-overflow-style: none;
 }
 
 html::-webkit-scrollbar, 
 body::-webkit-scrollbar {
-  display: none; /* Chrome, Safari, and Opera */
+  display: none;
 }
-
 
 body {
   background-color: var(--bg-color);
   background-image: 
-    radial-gradient(circle at 15% 50%, rgba(0, 229, 255, 0.03), transparent 25%),
-    radial-gradient(circle at 85% 30%, rgba(213, 0, 249, 0.03), transparent 25%);
+    radial-gradient(circle at 10% 20%, rgba(0, 229, 255, 0.08), transparent 35%),
+    radial-gradient(circle at 90% 80%, rgba(224, 64, 251, 0.08), transparent 35%),
+    radial-gradient(circle at 50% 50%, rgba(124, 77, 255, 0.05), transparent 45%),
+    linear-gradient(rgba(255, 255, 255, 0.015) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.015) 1px, transparent 1px);
+  background-size: 100% 100%, 100% 100%, 100% 100%, 40px 40px, 40px 40px;
   color: var(--text-main);
   font-family: 'Inter', sans-serif;
   min-height: 100vh;
