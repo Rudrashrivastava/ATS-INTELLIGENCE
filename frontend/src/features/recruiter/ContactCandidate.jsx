@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
+import axios from 'axios';
 import { ArrowLeft, Mail, Send, CheckCircle, ShieldCheck, User, Building, Calendar, DollarSign, Sparkles, FileText, Download } from 'lucide-react';
 import { useAuth } from '../auth/hooks/useAuth';
 
@@ -32,8 +33,31 @@ export default function ContactCandidate() {
   });
 
   const [loading, setLoading] = useState(false);
+  const [downloading, setDownloading] = useState(false);
   const [submitted, setSubmitted] = useState(false);
   const [error, setError] = useState('');
+
+  const handleDownloadPDF = async () => {
+    if (!trajectoryId) return;
+    setDownloading(true);
+    try {
+      const response = await axios.get(`/api/resume/download-guide/${trajectoryId}`, {
+        responseType: 'blob',
+        headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
+      });
+      const url = window.URL.createObjectURL(new Blob([response.data]));
+      const link = document.createElement('a');
+      link.href = url;
+      link.setAttribute('download', `${candidateName.replace(/\s+/g, '_')}_Dossier.pdf`);
+      document.body.appendChild(link);
+      link.click();
+    } catch (e) {
+      console.error("PDF Download Failure:", e);
+      setError("Failed to download PDF dossier. Please try again.");
+    } finally {
+      setDownloading(false);
+    }
+  };
 
   // Handle Input Changes with Secure Two-Way Data Binding
   const handleChange = (e) => {
@@ -135,7 +159,12 @@ export default function ContactCandidate() {
             <button
               type="button"
               onClick={() => {
-                const traj = location.state?.trajectory || { id: trajectoryId, primaryRole: candidateRole, overallScore: matchScore };
+                const traj = location.state?.trajectory || { 
+                  id: trajectoryId, 
+                  primaryRole: candidateRole, 
+                  overallScore: matchScore,
+                  user: candidateInfo.user || candidateInfo || { name: candidateName, email: candidateEmail }
+                };
                 navigate('/details', { state: { trajectory: traj } });
               }}
               className="glass-card hover-lift"
@@ -149,20 +178,20 @@ export default function ContactCandidate() {
               <FileText size={16} /> VIEW CANDIDATE CV & DOSSIER
             </button>
 
-            <a
-              href={`/api/resume/download-guide/${trajectoryId}`}
-              target="_blank"
-              rel="noreferrer"
+            <button
+              type="button"
+              onClick={handleDownloadPDF}
+              disabled={downloading}
               className="glass-card hover-lift"
               style={{
                 flex: 1, padding: '12px 18px', background: 'rgba(255, 255, 255, 0.05)',
                 border: '1px solid rgba(255, 255, 255, 0.15)', color: '#fff',
                 borderRadius: '8px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px',
-                fontSize: '12px', fontWeight: 'bold', textDecoration: 'none'
+                fontSize: '12px', fontWeight: 'bold'
               }}
             >
-              <Download size={16} /> DOWNLOAD CANDIDATE DOSSIER (PDF)
-            </a>
+              <Download size={16} /> {downloading ? 'GENERATING PDF...' : 'DOWNLOAD CANDIDATE DOSSIER (PDF)'}
+            </button>
           </div>
 
           {error && (

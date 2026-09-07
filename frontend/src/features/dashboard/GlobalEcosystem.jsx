@@ -252,7 +252,7 @@ export default function GlobalEcosystem() {
                 </div>
                 <div style={{display: 'flex', gap: '6px', alignItems: 'center'}}>
                   <button 
-                    onClick={() => navigate('/contact-candidate', { state: { candidate: item.user || { name: item.user?.name || 'Candidate' }, role: item.primaryRole, score: item.overallScore, trajectoryId: item.id } })}
+                    onClick={() => navigate('/contact-candidate', { state: { candidate: item.user || { name: item.user?.name || 'Candidate' }, role: item.primaryRole, score: item.overallScore, trajectoryId: item.id, trajectory: item } })}
                     className="glass-card hover-lift"
                     style={{
                       padding: '6px 10px', background: 'rgba(0, 229, 255, 0.08)',

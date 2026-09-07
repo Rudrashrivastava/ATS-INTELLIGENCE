@@ -1,4 +1,4 @@
-import { useLocation, useNavigate } from 'react';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { 
   ArrowLeft, Activity, Briefcase, Globe, 
   MapPin, Rocket, ShieldCheck, Zap, Target,
