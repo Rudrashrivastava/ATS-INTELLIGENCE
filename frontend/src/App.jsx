@@ -28,23 +28,23 @@ function AppContent() {
   };
 
   return (
-    <div style={{minHeight: '100vh', background: '#0a0a12', position: 'relative'}}>
+    <div style={{minHeight: '100vh', background: '#060811', position: 'relative'}}>
       
       {hasToken && !isAuthPage && (
         <nav className="global-navbar no-print" style={{
           position: 'fixed', top: '0', left: '0', right: '0', 
           zIndex: 1000000, height: '70px', 
-          background: '#121420', borderBottom: '3px solid #00E5FF',
-          boxShadow: '0 4px 30px rgba(0, 229, 255, 0.3)',
+          background: '#0D101D', borderBottom: '3px solid #00F0FF',
+          boxShadow: '0 4px 30px rgba(0, 240, 255, 0.25)',
           display: 'flex', alignItems: 'center', justifyContent: 'space-between',
           padding: '0 40px'
         }}>
           <Link to="/" className="nav-brand" style={{textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '12px'}}>
-            <img src="/favicon.svg" alt="ApplySphere AI Logo" style={{ width: '34px', height: '34px', filter: 'drop-shadow(0 0 10px rgba(0, 229, 255, 0.6))' }} />
-            <span style={{color: '#00E5FF', fontWeight: 'bold', fontSize: '20px', letterSpacing: '1.5px'}}>APPLYSPHERE AI</span>
+            <img src="/favicon.svg" alt="ApplySphere AI Logo" style={{ width: '34px', height: '34px', filter: 'drop-shadow(0 0 10px rgba(0, 240, 255, 0.6))' }} />
+            <span style={{color: '#00F0FF', fontWeight: 'bold', fontSize: '20px', letterSpacing: '1.5px'}}>APPLYSPHERE AI</span>
           </Link>
           
-          <div style={{display: 'flex', gap: '40px', alignItems: 'center'}}>
+          <div style={{display: 'flex', gap: '32px', alignItems: 'center'}}>
             <Link to="/" className="nav-link-neural">
               <LayoutDashboard size={18} />
               DASHBOARD
@@ -55,6 +55,11 @@ function AppContent() {
               ATS SCAN
             </Link>
 
+            <Link to="/mapped-jobs" className="nav-link-neural" style={{ color: '#00F0FF' }}>
+              <Zap size={18} color="#00F0FF" />
+              JOB MARKET (30+)
+            </Link>
+
             <div style={{height: '24px', width: '1px', background: 'rgba(255,255,255,0.1)'}}></div>
             
             <div style={{display: 'flex', alignItems: 'center', gap: '20px'}}>
@@ -62,14 +67,14 @@ function AppContent() {
                 <div style={{fontSize: '14px', fontWeight: 'bold', color: '#fff', textTransform: 'uppercase'}}>
                   {user?.name || user?.email?.split('@')[0] || 'OPERATOR'}
                 </div>
-                <div style={{fontSize: '9px', color: '#00E5FF', letterSpacing: '2px'}}>NEURAL IDENTITY</div>
+                <div style={{fontSize: '9px', color: '#00F0FF', letterSpacing: '2px'}}>NEURAL IDENTITY</div>
               </div>
               
               <button 
                 onClick={handleLogout}
                 style={{
-                  background: 'rgba(255, 23, 68, 0.1)', border: '1px solid #ff1744',
-                  color: '#ff1744', padding: '8px 16px', borderRadius: '4px', cursor: 'pointer',
+                  background: 'rgba(255, 46, 84, 0.1)', border: '1px solid #FF2E54',
+                  color: '#FF2E54', padding: '8px 16px', borderRadius: '4px', cursor: 'pointer',
                   display: 'flex', alignItems: 'center', gap: '10px', fontSize: '11px',
                   fontWeight: 'bold', letterSpacing: '1px', transition: 'all 0.3s ease'
                 }}

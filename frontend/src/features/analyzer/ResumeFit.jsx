@@ -127,32 +127,74 @@ export default function ResumeFit() {
         
         {/* AGENT-VERIFIED OPPORTUNITIES (REAL AI DATA) */}
         <section className="glass-card" style={{minHeight: '500px', background: 'rgba(255,255,255,0.01)', padding: '32px'}}>
-          <div style={{display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '32px'}}>
-            <Briefcase color="var(--primary)" size={24} />
-            <h2 style={{fontSize: '20px', letterSpacing: '1px', fontWeight: 'bold'}}>AGENT-VERIFIED OPPORTUNITIES</h2>
+          <div style={{display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '32px'}}>
+            <div style={{display: 'flex', alignItems: 'center', gap: '12px'}}>
+              <Briefcase color="var(--primary)" size={24} />
+              <h2 style={{fontSize: '20px', letterSpacing: '1px', fontWeight: 'bold'}}>AGENT-VERIFIED OPPORTUNITIES</h2>
+            </div>
+            <button 
+              onClick={() => navigate('/mapped-jobs', { state: { analysisData } })}
+              style={{
+                background: 'rgba(0, 240, 255, 0.1)', border: '1px solid #00F0FF',
+                color: '#00F0FF', padding: '6px 14px', borderRadius: '6px', cursor: 'pointer',
+                fontSize: '11px', fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: '6px'
+              }}
+            >
+              EXPLORE ALL 30+ JOBS ↗
+            </button>
           </div>
 
           <div style={{display: 'flex', flexDirection: 'column', gap: '20px'}}>
-            {jobs.length > 0 ? jobs.map((job, i) => (
-              <div key={i} className="glass-card hover-lift" style={{
-                padding: '24px', 
-                borderLeft: '4px solid var(--primary)',
-                background: 'rgba(255,255,255,0.02)',
-                cursor: 'pointer'
-              }} onClick={() => navigate('/details', { state: { trajectory: analysisData } })}>
-                <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '12px'}}>
-                  <div>
-                    <h3 style={{fontSize: '18px', color: '#fff', marginBottom: '4px'}}>{job.title}</h3>
-                    <div style={{display: 'flex', gap: '12px', fontSize: '12px', color: 'var(--text-muted)'}}>
-                      <span style={{display: 'flex', alignItems: 'center', gap: '4px'}}><Globe size={14} /> {job.company}</span>
-                      <span style={{display: 'flex', alignItems: 'center', gap: '4px'}}><MapPin size={14} /> {job.location}</span>
+            {jobs.length > 0 ? jobs.map((job, i) => {
+              const targetUrl = job.url || `https://careers.${(job.company || 'google').toLowerCase().replace(/\s+/g, '')}.com`;
+              return (
+                <div key={i} className="glass-card hover-lift" style={{
+                  padding: '24px', 
+                  borderLeft: '4px solid var(--primary)',
+                  background: 'rgba(13, 16, 29, 0.6)',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  gap: '12px'
+                }}>
+                  <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start'}}>
+                    <div>
+                      <h3 style={{fontSize: '18px', color: '#fff', marginBottom: '4px'}}>{job.title}</h3>
+                      <div style={{display: 'flex', gap: '12px', fontSize: '12px', color: 'var(--text-muted)'}}>
+                        <span style={{display: 'flex', alignItems: 'center', gap: '4px'}}><Globe size={14} color="#00F0FF" /> {job.company}</span>
+                        <span style={{display: 'flex', alignItems: 'center', gap: '4px'}}><MapPin size={14} /> {job.location}</span>
+                      </div>
                     </div>
+                    <span className="badge-neural" style={{background: 'rgba(0, 240, 255, 0.1)', color: 'var(--primary)', padding: '4px 10px', borderRadius: '4px', fontSize: '10px', fontWeight: 'bold'}}>COMPETITIVE</span>
                   </div>
-                  <span className="badge-neural" style={{background: 'rgba(0, 229, 255, 0.1)', color: 'var(--primary)', padding: '4px 10px', borderRadius: '4px', fontSize: '10px', fontWeight: 'bold'}}>COMPETITIVE</span>
+                  
+                  <p style={{fontSize: '13px', color: 'var(--text-muted)', lineHeight: '1.5'}}>{job.desc || 'Optimized for your skill profile.'}</p>
+                  
+                  <div style={{ display: 'flex', gap: '10px', marginTop: '8px' }}>
+                    <a
+                      href={targetUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      style={{
+                        padding: '8px 16px', background: 'rgba(0, 240, 255, 0.15)', border: '1px solid #00F0FF',
+                        color: '#00F0FF', borderRadius: '6px', fontSize: '11px', fontWeight: 'bold',
+                        textDecoration: 'none', display: 'inline-flex', alignItems: 'center', gap: '6px'
+                      }}
+                    >
+                      APPLY ON OFFICIAL PORTAL ↗
+                    </a>
+                    <button
+                      onClick={() => navigate('/details', { state: { trajectory: analysisData } })}
+                      style={{
+                        padding: '8px 14px', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.15)',
+                        color: '#fff', borderRadius: '6px', fontSize: '11px', fontWeight: 'bold', cursor: 'pointer'
+                      }}
+                    >
+                      VIEW STRATEGY DOSSIER
+                    </button>
+                  </div>
                 </div>
-                <p style={{fontSize: '13px', color: 'var(--text-muted)', lineHeight: '1.5'}}>{job.desc || 'Optimized for your skill profile.'}</p>
-              </div>
-            )) : (
+              );
+            }) : (
               <div style={{padding: '100px 20px', textAlign: 'center', opacity: 0.5}}>
                 <ShieldCheck size={48} style={{marginBottom: '16px'}} color="var(--primary)" />
                 <p>Decoding market opportunities...</p>

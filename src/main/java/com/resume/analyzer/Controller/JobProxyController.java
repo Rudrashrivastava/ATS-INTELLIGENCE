@@ -51,7 +51,6 @@ public class JobProxyController {
         System.out.println("ApplySphere AI Generated " + aiJobs.size() + " jobs in " + (System.currentTimeMillis() - startTime) + "ms");
         return ResponseEntity.ok(response);
     }
-    }
 
     @GetMapping("/api/jobs/suggestions")
     public ResponseEntity<?> getJobSuggestions(@RequestParam String query, @RequestParam(required = false, defaultValue = "us") String countryCode) {

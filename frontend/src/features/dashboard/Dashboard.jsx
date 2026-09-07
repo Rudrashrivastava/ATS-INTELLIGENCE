@@ -127,7 +127,15 @@ export default function Dashboard() {
           <p className="header-sub">Real-time resume analytics, ecosystem candidates, and AI trajectories.</p>
         </div>
 
-        <div className="header-actions">
+        <div className="header-actions" style={{ display: 'flex', gap: '12px' }}>
+          <button 
+            onClick={() => navigate('/mapped-jobs')}
+            className="btn-glow flex-center"
+            style={{ padding: '12px 20px', borderRadius: '10px', gap: '8px', fontSize: '12px', fontWeight: 'bold', background: 'rgba(139, 92, 246, 0.2)', border: '1px solid #8B5CF6', color: '#fff' }}
+          >
+            <Building size={16} color="#8B5CF6" /> EXPLORE 30+ JOBS
+          </button>
+
           <button 
             onClick={() => navigate('/analyzer')}
             className="btn-glow flex-center"

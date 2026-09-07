@@ -1,18 +1,21 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Montserrat:wght@400;600;700&family=JetBrains+Mono:wght@400;600&display=swap');
 
 :root {
-  --bg-color: #06070c;
-  --surface: #0f111a;
-  --surface-hover: #171a26;
-  --primary: #00E5FF;
-  --primary-glow: rgba(0, 229, 255, 0.4);
-  --secondary: #E040FB;
-  --secondary-glow: rgba(224, 64, 251, 0.4);
+  --bg-color: #060811;
+  --surface: #0D101D;
+  --surface-hover: #15192B;
+  --primary: #00F0FF;
+  --primary-glow: rgba(0, 240, 255, 0.35);
+  --secondary: #8B5CF6;
+  --secondary-glow: rgba(139, 92, 246, 0.35);
   --accent-purple: #7C4DFF;
-  --error: #FF1744;
+  --accent-emerald: #10B981;
+  --emerald-glow: rgba(16, 185, 129, 0.35);
+  --error: #FF2E54;
   --text-main: #FFFFFF;
   --text-muted: #94A3B8;
-  --glass-border: rgba(0, 229, 255, 0.12);
+  --glass-border: rgba(0, 240, 255, 0.15);
+  --glass-card-bg: rgba(13, 16, 29, 0.75);
 }
 
 * {
@@ -34,12 +37,12 @@ body::-webkit-scrollbar {
 body {
   background-color: var(--bg-color);
   background-image: 
-    radial-gradient(circle at 10% 20%, rgba(0, 229, 255, 0.08), transparent 35%),
-    radial-gradient(circle at 90% 80%, rgba(224, 64, 251, 0.08), transparent 35%),
-    radial-gradient(circle at 50% 50%, rgba(124, 77, 255, 0.05), transparent 45%),
-    linear-gradient(rgba(255, 255, 255, 0.015) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(255, 255, 255, 0.015) 1px, transparent 1px);
-  background-size: 100% 100%, 100% 100%, 100% 100%, 40px 40px, 40px 40px;
+    radial-gradient(circle at 15% 15%, rgba(0, 240, 255, 0.12), transparent 40%),
+    radial-gradient(circle at 85% 85%, rgba(139, 92, 246, 0.12), transparent 40%),
+    radial-gradient(circle at 50% 50%, rgba(16, 185, 129, 0.06), transparent 50%),
+    linear-gradient(rgba(255, 255, 255, 0.02) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.02) 1px, transparent 1px);
+  background-size: 100% 100%, 100% 100%, 100% 100%, 48px 48px, 48px 48px;
   color: var(--text-main);
   font-family: 'Inter', sans-serif;
   min-height: 100vh;
