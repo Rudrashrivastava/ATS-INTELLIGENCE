@@ -195,15 +195,8 @@ export default function MappedJobs() {
       case 'linkedin':
         return `https://www.linkedin.com/jobs/search/?keywords=${comp}%20${role}&location=${loc}`;
 
-      case 'naukri': {
-        const queryClean = encodeURIComponent(`${compRaw} ${jobTitle}`).replace(/%20/g, '-');
-        if (isIndia) {
-          const cityMatch = rawLoc.toLowerCase().match(/(bangalore|bengaluru|hyderabad|mumbai|delhi|noida|gurgaon|pune|chennai)/);
-          const city = cityMatch ? cityMatch[0] : 'india';
-          return `https://www.naukri.com/${queryClean}-jobs-in-${city}?k=${comp}%20${role}`;
-        }
+      case 'naukri':
         return `https://www.naukri.com/jobs-in-india?k=${comp}%20${role}`;
-      }
 
       case 'indeed':
         if (isIndia) {
@@ -213,9 +206,9 @@ export default function MappedJobs() {
 
       case 'glassdoor':
         if (isIndia) {
-          return `https://www.glassdoor.co.in/Job/india-${encodeURIComponent(jobTitle.toLowerCase()).replace(/%20/g, '-')}-jobs-SRCH_IL.0,5_IN115_KO6,${Math.min(30, 6 + jobTitle.length)}.htm?sc.keyword=${comp}%20${role}`;
+          return `https://www.glassdoor.co.in/Job/jobs.htm?sc.keyword=${comp}%20${role}&locKeyword=${loc}`;
         }
-        return `https://www.glassdoor.com/Job/jobs.htm?sc.keyword=${comp}%20${role}`;
+        return `https://www.glassdoor.com/Job/jobs.htm?sc.keyword=${comp}%20${role}&locKeyword=${loc}`;
 
       case 'wellfound':
         return `https://wellfound.com/jobs?q=${comp}%20${role}`;
