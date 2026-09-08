@@ -14,6 +14,8 @@ import { LogOut, LayoutDashboard, Search, Zap, Activity } from 'lucide-react';
 import { useAuth } from './features/auth/hooks/useAuth';
 import { AuthProvider } from './context/AuthContext';
 
+import NotificationCenter from './components/NotificationCenter';
+
 // Wrapper to handle location-based logic
 function AppContent() {
   const { token: authToken, user, loading, logout } = useAuth();
@@ -44,7 +46,7 @@ function AppContent() {
             <span style={{color: '#00F0FF', fontWeight: 'bold', fontSize: '20px', letterSpacing: '1.5px'}}>APPLYSPHERE AI</span>
           </Link>
           
-          <div style={{display: 'flex', gap: '32px', alignItems: 'center'}}>
+          <div style={{display: 'flex', gap: '28px', alignItems: 'center'}}>
             <Link to="/" className="nav-link-neural">
               <LayoutDashboard size={18} />
               DASHBOARD
@@ -62,7 +64,11 @@ function AppContent() {
 
             <div style={{height: '24px', width: '1px', background: 'rgba(255,255,255,0.1)'}}></div>
             
-            <div style={{display: 'flex', alignItems: 'center', gap: '20px'}}>
+            <div style={{display: 'flex', alignItems: 'center', gap: '16px'}}>
+              
+              {/* IN-PLATFORM RECRUITER OUTREACH NOTIFICATION BELL */}
+              <NotificationCenter />
+
               <div style={{textAlign: 'right'}}>
                 <div style={{fontSize: '13px', fontWeight: 'bold', color: '#fff', textTransform: 'uppercase', display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: '8px'}}>
                   <span>{user?.name || user?.email?.split('@')[0] || 'OPERATOR'}</span>

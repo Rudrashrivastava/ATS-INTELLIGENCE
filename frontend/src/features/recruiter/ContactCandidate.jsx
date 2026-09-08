@@ -68,7 +68,7 @@ export default function ContactCandidate() {
     }));
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     if (!formData.recruiterName.trim() || !formData.message.trim()) {
       setError('Please fill in all required fields.');
@@ -78,11 +78,17 @@ export default function ContactCandidate() {
     setError('');
     setLoading(true);
 
-    // Simulate Secure Communication Dispatch
-    setTimeout(() => {
-      setLoading(false);
+    try {
+      await axios.post('/api/notifications/dispatch', formData, {
+        headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
+      });
       setSubmitted(true);
-    }, 1200);
+    } catch (err) {
+      console.error("Outreach Dispatch Failure:", err);
+      setError(err.response?.data?.message || "Failed to dispatch outreach. Please try again.");
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
