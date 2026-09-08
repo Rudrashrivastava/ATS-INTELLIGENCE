@@ -34,6 +34,7 @@ public class User implements UserDetails {
     private String username; // Optional fallback
     
     @Enumerated(EnumType.STRING)
+    @Column(name = "role", length = 50)
     private Role role;
 
     @Override
