@@ -64,8 +64,20 @@ function AppContent() {
             
             <div style={{display: 'flex', alignItems: 'center', gap: '20px'}}>
               <div style={{textAlign: 'right'}}>
-                <div style={{fontSize: '14px', fontWeight: 'bold', color: '#fff', textTransform: 'uppercase'}}>
-                  {user?.name || user?.email?.split('@')[0] || 'OPERATOR'}
+                <div style={{fontSize: '13px', fontWeight: 'bold', color: '#fff', textTransform: 'uppercase', display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: '8px'}}>
+                  <span>{user?.name || user?.email?.split('@')[0] || 'OPERATOR'}</span>
+                  <span style={{
+                    fontSize: '9px',
+                    padding: '2px 8px',
+                    borderRadius: '4px',
+                    background: user?.role === 'HR' || user?.role === 'RECRUITER' ? 'rgba(0, 230, 118, 0.2)' : 'rgba(0, 229, 255, 0.2)',
+                    color: user?.role === 'HR' || user?.role === 'RECRUITER' ? '#00E676' : '#00E5FF',
+                    border: user?.role === 'HR' || user?.role === 'RECRUITER' ? '1px solid #00E676' : '1px solid #00E5FF',
+                    fontWeight: 'bold',
+                    letterSpacing: '1px'
+                  }}>
+                    {user?.role === 'HR' || user?.role === 'RECRUITER' ? 'HR RECRUITER' : 'CANDIDATE'}
+                  </span>
                 </div>
                 <div style={{fontSize: '9px', color: '#00F0FF', letterSpacing: '2px'}}>NEURAL IDENTITY</div>
               </div>
