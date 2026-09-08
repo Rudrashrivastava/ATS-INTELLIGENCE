@@ -1,12 +1,13 @@
 import { useState, useEffect } from 'react';
 import axios from 'axios';
-import { Bell, Mail, CheckCircle, X, Building, Briefcase, DollarSign, Trash2, ExternalLink, ShieldCheck, Clock } from 'lucide-react';
+import { Bell, Mail, CheckCircle, X, Building, Briefcase, DollarSign, Trash2, ExternalLink, ShieldCheck, Clock, Copy, Send } from 'lucide-react';
 
 export default function NotificationCenter() {
   const [isOpen, setIsOpen] = useState(false);
   const [notifications, setNotifications] = useState([]);
   const [unreadCount, setUnreadCount] = useState(0);
   const [loading, setLoading] = useState(false);
+  const [copiedEmail, setCopiedEmail] = useState(null);
 
   const fetchNotifications = async () => {
     try {
@@ -52,6 +53,13 @@ export default function NotificationCenter() {
     } catch (err) {
       console.error("Failed to clear notifications", err);
     }
+  };
+
+  const handleCopyEmail = (email) => {
+    if (!email) return;
+    navigator.clipboard.writeText(email);
+    setCopiedEmail(email);
+    setTimeout(() => setCopiedEmail(null), 2500);
   };
 
   return (
@@ -112,8 +120,8 @@ export default function NotificationCenter() {
             position: 'fixed',
             top: '80px',
             right: '40px',
-            width: '420px',
-            maxHeight: '80vh',
+            width: '440px',
+            maxHeight: '82vh',
             background: 'rgba(13, 16, 29, 0.96)',
             backdropFilter: 'blur(20px)',
             border: '1.5px solid #00E5FF',
@@ -171,7 +179,7 @@ export default function NotificationCenter() {
             display: 'flex',
             flexDirection: 'column',
             gap: '14px',
-            maxHeight: '65vh'
+            maxHeight: '68vh'
           }}>
             {notifications.length === 0 ? (
               <div style={{ padding: '40px 20px', textAlign: 'center', color: 'var(--text-muted)' }}>
@@ -181,7 +189,11 @@ export default function NotificationCenter() {
               </div>
             ) : (
               notifications.map((notif) => {
-                const mailtoUrl = `mailto:${notif.recruiterEmail}?subject=${encodeURIComponent(`Re: ${notif.subject || 'Interview Opportunity'}`)}&body=${encodeURIComponent(`Hi ${notif.recruiterName},\n\nThank you for reaching out via ApplySphere AI regarding the ${notif.jobTitle || 'position'}.\n\nBest regards,`)}`;
+                const mailSubject = `Re: ${notif.subject || 'Interview Opportunity'}`;
+                const mailBody = `Hi ${notif.recruiterName || 'HR Recruiter'},\n\nThank you for reaching out via ApplySphere AI regarding the ${notif.jobTitle || 'position'}.\n\nBest regards,`;
+                
+                const mailtoUrl = `mailto:${notif.recruiterEmail}?subject=${encodeURIComponent(mailSubject)}&body=${encodeURIComponent(mailBody)}`;
+                const webGmailUrl = `https://mail.google.com/mail/?view=cm&fs=1&to=${encodeURIComponent(notif.recruiterEmail)}&su=${encodeURIComponent(mailSubject)}&body=${encodeURIComponent(mailBody)}`;
 
                 return (
                   <div
@@ -215,10 +227,37 @@ export default function NotificationCenter() {
                       }}>
                         {notif.recruiterName ? notif.recruiterName.charAt(0).toUpperCase() : 'H'}
                       </div>
-                      <div>
+                      <div style={{ flex: 1 }}>
                         <div style={{ fontSize: '13px', fontWeight: 'bold', color: '#fff' }}>{notif.recruiterName}</div>
                         <div style={{ fontSize: '11px', color: '#00E5FF' }}>{notif.companyName || 'Enterprise Partner'}</div>
                       </div>
+                    </div>
+
+                    {/* HR EMAIL BADGE WITH COPY BUTTON */}
+                    <div style={{
+                      display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                      background: 'rgba(0, 230, 118, 0.1)', border: '1px solid rgba(0, 230, 118, 0.3)',
+                      padding: '6px 10px', borderRadius: '6px', fontSize: '11px'
+                    }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '6px', color: '#00E676', fontWeight: '500' }}>
+                        <Mail size={13} />
+                        <span style={{ fontFamily: 'monospace', color: '#fff', fontSize: '12px' }}>
+                          {notif.recruiterEmail || 'hr@company.com'}
+                        </span>
+                      </div>
+                      <button
+                        onClick={() => handleCopyEmail(notif.recruiterEmail)}
+                        style={{
+                          background: copiedEmail === notif.recruiterEmail ? 'rgba(0, 230, 118, 0.25)' : 'rgba(255,255,255,0.08)',
+                          border: 'none', color: copiedEmail === notif.recruiterEmail ? '#00E676' : '#fff',
+                          borderRadius: '4px', padding: '3px 8px', fontSize: '10px', cursor: 'pointer',
+                          display: 'flex', alignItems: 'center', gap: '4px', transition: 'all 0.2s ease'
+                        }}
+                        title="Copy Recruiter Email"
+                      >
+                        {copiedEmail === notif.recruiterEmail ? <CheckCircle size={11} color="#00E676" /> : <Copy size={11} />}
+                        {copiedEmail === notif.recruiterEmail ? 'COPIED!' : 'COPY EMAIL'}
+                      </button>
                     </div>
 
                     <div style={{ fontSize: '12px', fontWeight: 'bold', color: '#00E676', display: 'flex', alignItems: 'center', gap: '6px' }}>
@@ -234,12 +273,12 @@ export default function NotificationCenter() {
                       "{notif.message}"
                     </div>
 
-                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: '4px' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: '4px', flexWrap: 'wrap', gap: '8px' }}>
                       <div style={{ fontSize: '10px', color: 'var(--text-muted)', display: 'flex', alignItems: 'center', gap: '4px' }}>
                         <Clock size={11} /> {notif.createdAt ? new Date(notif.createdAt).toLocaleDateString() : 'Recent'}
                       </div>
 
-                      <div style={{ display: 'flex', gap: '8px' }}>
+                      <div style={{ display: 'flex', gap: '6px', alignItems: 'center' }}>
                         {!notif.isRead && (
                           <button
                             onClick={() => handleMarkAsRead(notif.id)}
@@ -252,17 +291,34 @@ export default function NotificationCenter() {
                           </button>
                         )}
                         
+                        {/* DIRECT GMAIL WEB COMPOSE */}
+                        <a
+                          href={webGmailUrl}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          style={{
+                            background: 'rgba(234, 67, 53, 0.15)', border: '1px solid #EA4335',
+                            color: '#FF6B6B', borderRadius: '6px', padding: '4px 8px', fontSize: '10.5px',
+                            fontWeight: 'bold', textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '4px'
+                          }}
+                          title="Open directly in Web Gmail"
+                        >
+                          <Send size={11} /> GMAIL WEB ↗
+                        </a>
+
+                        {/* DESKTOP MAIL APP */}
                         <a
                           href={mailtoUrl}
                           target="_blank"
                           rel="noopener noreferrer"
                           style={{
                             background: 'rgba(0, 230, 118, 0.15)', border: '1px solid #00E676',
-                            color: '#00E676', borderRadius: '6px', padding: '4px 10px', fontSize: '11px',
+                            color: '#00E676', borderRadius: '6px', padding: '4px 8px', fontSize: '10.5px',
                             fontWeight: 'bold', textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '4px'
                           }}
+                          title="Open default desktop mail client (Outlook, Mail)"
                         >
-                          <Mail size={12} /> CONNECT VIA EMAIL ↗
+                          <Mail size={11} /> MAIL APP ↗
                         </a>
                       </div>
                     </div>
