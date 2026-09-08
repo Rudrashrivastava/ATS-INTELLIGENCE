@@ -35,12 +35,19 @@ public class AuthController {
                 return ResponseEntity.badRequest().body(new AuthResponse(null, "This identity (email) is already established."));
             }
 
+            User.Role assignedRole = User.Role.USER;
+            if (request.getRole() != null) {
+                try {
+                    assignedRole = User.Role.valueOf(request.getRole().toUpperCase());
+                } catch (Exception ignored) {}
+            }
+
             User user = User.builder()
                     .email(request.getEmail())
                     .username(request.getEmail()) // Fallback
                     .password(passwordEncoder.encode(request.getPassword()))
                     .name(request.getName())
-                    .role(User.Role.USER)
+                    .role(assignedRole)
                     .build();
             
             userRepository.save(user);
@@ -85,6 +92,7 @@ class RegisterRequest {
     private String name;
     private String email;
     private String password;
+    private String role; // "USER", "HR", or "RECRUITER"
 }
 
 @Data @NoArgsConstructor @AllArgsConstructor

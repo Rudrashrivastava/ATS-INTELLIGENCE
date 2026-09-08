@@ -32,5 +32,12 @@ public interface AnalysisResultRepository extends JpaRepository<AnalysisResult, 
 
     @org.springframework.data.jpa.repository.Query("SELECT AVG(a.overallScore) FROM AnalysisResult a")
     Double getAverageScore();
+
+    // HR / Recruiter Scouting Queries
+    @org.springframework.data.jpa.repository.Query("SELECT a FROM AnalysisResult a LEFT JOIN FETCH a.user WHERE LOWER(a.primaryRole) LIKE LOWER(CONCAT('%', :role, '%')) AND a.overallScore >= :minScore ORDER BY a.overallScore DESC")
+    List<AnalysisResult> findCandidatesForHR(@org.springframework.data.repository.query.Param("role") String role, @org.springframework.data.repository.query.Param("minScore") Integer minScore);
+
+    @org.springframework.data.jpa.repository.Query("SELECT a FROM AnalysisResult a LEFT JOIN FETCH a.user WHERE a.id = :id")
+    java.util.Optional<AnalysisResult> findCandidateDetailsForHR(@org.springframework.data.repository.query.Param("id") Long id);
 }
 

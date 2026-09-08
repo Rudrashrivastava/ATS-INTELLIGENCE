@@ -2,7 +2,6 @@
 
 A high-performance, AI-driven career intelligence platform that synchronizes professional trajectories with real-time market data. Built with a **Spring Boot 3.x** backend and a **Futuristic Glassmorphic React** frontend.
 
----
 
 ## 🧠 Neural Architecture: The "Intelligence Shield"
 
@@ -65,5 +64,3 @@ The platform operates using a **Dual-Agent Failover System**, ensuring 100% upti
 - **Route Guards**: Protected routes ensure only authenticated users can access the Neural Core.
 - **Zero-Drop Policy**: Hibernate configuration prevents the database from being cleared on restart.
 
----
-*Created by Rudrashrivastava • Powered by Antigravity AI*
