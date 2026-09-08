@@ -945,6 +945,46 @@ Candidate ko exact step-by-step career trajectory milti hai."
 
 ---
 
+#### 🔹 Q38: How did you fix MySQL's `Data truncated for column 'role'` runtime error on Render deployment without manual database access?
+**Answer**:  
+"Render deployment par unexpected MySQL `Data truncated for column 'role'` HTTP 500 error aya jab candidate ya HR signup kar rahe the:
+- **Root Cause**: Table pehle create hone ki wajah se MySQL column `role` micro length (jaise `VARCHAR(2)` / `ENUM`) par lock ho gaya tha. Spring Boot hibernate `ddl-auto=update` Mode existing columns ka length alter nahi karta.
+- **Solution**:
+  1. Entity Level: `User.java` mein `@Column(name = "role", length = 50)` set kiya.
+  2. Automated Startup Schema Fixer: `DatabaseSchemaFixer.java` (`CommandLineRunner`) component add kiya jo Spring Boot start hote hi execute karta hai:
+     `ALTER TABLE users MODIFY COLUMN role VARCHAR(50)` (MySQL) & `ALTER TABLE users ALTER COLUMN role TYPE VARCHAR(50)` (PostgreSQL).
+- **Result**: Production database automatically upgrade ho gaya with zero manual database access or downtime!"
+
+---
+
+#### 🔹 Q39: How does your In-App Real-Time HR Outreach Notification System (`NotificationCenter.jsx`) work, and how did you solve OS Mail Client modal friction using Web Gmail Compose links?
+**Answer**:  
+"Real-time candidate-HR connection ke liye humne notification network build kiya:
+- **Backend**: `NotificationController.java` & `OutreachNotification` entity. HR jab candidate ko outreach message bhejta hai, DB record create ho jata hai.
+- **Frontend Real-time Polling**: Top navbar notification bell 🔔 har 10 seconds mein `/api/notifications/my-notifications` poll karta hai.
+- **UX Challenge & Web Gmail Solution**: Standard `mailto:` links OS-level popup ('Select mail app: Outlook / Brave / Edge') kholte hain jo browser users ke liye frustrating hota hai. Humne **Direct Web Gmail Compose URL** construct kiya:
+  `https://mail.google.com/mail/?view=cm&fs=1&to=hr_email&su=Re:Interview&body=Hi HR...`
+- **Result**: Candidate 1-click me exact HR email view/copy kar sakta hai aur direct browser Gmail compose window mein personalized reply bhej sakta hai."
+
+---
+
+#### 🔹 Q40: How did you fix Glassdoor job search query string truncation in `MappedJobs.jsx`?
+**Answer**:  
+"Pehle Glassdoor URL generator mein path slug slicer (`KO6,30`) hardcoded tha. Jab long job titles (e.g., `Software Engineer - Software Infrastructure`) input hote the, Glassdoor query 30 chars par chop ho kar `"software engineer soft"` ban jati thi, jisse Glassdoor random DevOps / UnitedHealth jobs return karta hai.
+- **Fix**: Path slug slicer drop karke clean direct search query parameters URL (`https://www.glassdoor.co.in/Job/jobs.htm?sc.keyword=Google%20Software%20Engineer&locKeyword=India`) construct kiya.
+- **Result**: Glassdoor par click karte hi exact Company + Role search load hota hai without query truncation."
+
+---
+
+#### 🔹 Q41: How did you redesign the Auth modal (`Auth.jsx`) to make it 45% more compact without breaking RBAC state logic?
+**Answer**:  
+"Pehle Auth screen 650px+ tall vertical grid use karti thi jisme excess scrolling padti thi.
+- **Redesign**: Purane vertical 2-column cards grid ko slim **Horizontal Segmented Control Pill** (`[ 👤 Candidate ] [ 💼 HR Recruiter ]`) se replace kiya.
+- Form inputs, header icon (`36px`), and password strength bar ko slim inline components me convert kiya.
+- Dynamic glowing accent switching (`#00E5FF` for Candidate vs `#00E676` for HR) preserve karke UI height **45% shrink** ki."
+
+---
+
 ## 🎭 SECTION 15: HR & Managerial Round Master Prep (STAR Storytelling)
 
 > [!NOTE]
