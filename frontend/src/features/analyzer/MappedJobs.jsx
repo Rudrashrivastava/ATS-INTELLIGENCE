@@ -10,8 +10,19 @@ export default function MappedJobs() {
   const { state } = useLocation();
   const navigate = useNavigate();
 
-  const analysisData = state?.analysisData || {};
-  const initialRole = analysisData.primaryRole || 'Software Engineer';
+  // Retrieve active CV scan result from state or sessionStorage
+  const activeAnalysis = state?.analysisData || (() => {
+    try {
+      const raw = sessionStorage.getItem('active_analysis') || sessionStorage.getItem('active_trajectory');
+      return raw ? JSON.parse(raw) : null;
+    } catch (e) {
+      return null;
+    }
+  })();
+
+  const hasScanResult = Boolean(activeAnalysis && (activeAnalysis.overallScore || activeAnalysis.score));
+  const candidateAtsScore = activeAnalysis?.overallScore || activeAnalysis?.score || 0;
+  const initialRole = activeAnalysis?.primaryRole || 'Software Engineer';
 
   // State Management
   const [activeRole, setActiveRole] = useState(initialRole);
@@ -146,44 +157,64 @@ export default function MappedJobs() {
     setFilteredJobs(list);
   }, [search, selectedWorkMode, selectedCompany, selectedCategory, jobs]);
 
-  // URL Generators for Various Application Platforms
+  // URL Generators for Various Application Platforms (WITH PRECISE LOCATION & INDIA SUPPORT)
   const getPlatformUrl = (platformKey, job) => {
     const compRaw = job?.company_name || job?.company || 'Enterprise';
     const comp = encodeURIComponent(compRaw);
-    const role = encodeURIComponent(activeRole || 'Software Engineer');
-    const loc = encodeURIComponent(selectedCountry === 'Global / All' ? 'Global' : selectedCountry);
+    const jobTitle = job?.title || activeRole || 'Software Engineer';
+    const role = encodeURIComponent(jobTitle);
+    
+    // Resolve location accurately: use job.location if available, otherwise selectedCountry
+    const rawLoc = (job?.location || selectedCountry || 'India').trim();
+    const isIndia = rawLoc.toLowerCase().includes('india') || selectedCountry === 'India';
+    const loc = encodeURIComponent(rawLoc);
 
     switch (platformKey) {
-      case 'official':
+      case 'official': {
         const cLow = compRaw.toLowerCase().trim();
         if (cLow.includes('google')) return `https://careers.google.com/jobs/results/?q=${role}&location=${loc}`;
-        if (cLow.includes('microsoft')) return `https://careers.microsoft.com/us/en/search-results?keywords=${role}`;
-        if (cLow.includes('amazon')) return `https://www.amazon.jobs/en/search?base_query=${role}`;
-        if (cLow.includes('meta') || cLow.includes('facebook')) return `https://www.metacareers.com/jobs?q=${role}`;
-        if (cLow.includes('apple')) return `https://jobs.apple.com/en-us/search?search=${role}`;
+        if (cLow.includes('microsoft')) return `https://careers.microsoft.com/v2/global/en/search?lc=${loc}&q=${role}`;
+        if (cLow.includes('amazon')) return `https://www.amazon.jobs/en/search?base_query=${role}&loc_query=${loc}`;
+        if (cLow.includes('meta') || cLow.includes('facebook')) return `https://www.metacareers.com/jobs?q=${role}&location=${loc}`;
+        if (cLow.includes('apple')) return `https://jobs.apple.com/en-in/search?search=${role}&location=${loc}`;
         if (cLow.includes('nvidia')) return `https://nvidia.wd5.myworkdayjobs.com/NVIDIAExternalCareerSite?q=${role}`;
         if (cLow.includes('netflix')) return `https://jobs.netflix.com/search?q=${role}`;
         if (cLow.includes('tesla')) return `https://www.tesla.com/careers/search/?query=${role}`;
-        if (cLow.includes('tcs')) return `https://www.tcs.com/careers`;
+        if (cLow.includes('tcs')) return `https://www.tcs.com/careers/india`;
         if (cLow.includes('infosys')) return `https://www.infosys.com/careers.html`;
-        if (cLow.includes('accenture')) return `https://www.accenture.com/in-en/careers/jobsearch?jk=${role}`;
+        if (cLow.includes('accenture')) return `https://www.accenture.com/in-en/careers/jobsearch?jk=${role}&sb=1`;
         if (cLow.includes('wipro')) return `https://careers.wipro.com/careers-home/`;
-        if (cLow.includes('ibm')) return `https://www.ibm.com/careers/search?q=${role}`;
+        if (cLow.includes('ibm')) return `https://www.ibm.com/in-en/employment/`;
+        if (cLow.includes('deloitte')) return `https://jobs2.deloitte.com/in/en/search-results?keywords=${role}`;
+        if (cLow.includes('oracle')) return `https://eeho.fa.us2.oraclecloud.com/hcmUI/CandidateExperience/en/sites/CX_1/requisitions?keyword=${role}`;
+        if (cLow.includes('adobe')) return `https://careers.adobe.com/us/en/search-results?keywords=${role}`;
         if (job?.url && job.url.includes('http')) return job.url;
-        return `https://www.google.com/search?q=${encodeURIComponent(`${compRaw} ${activeRole} careers ${selectedCountry}`)}`;
+        return `https://www.google.com/search?q=${encodeURIComponent(`${compRaw} ${jobTitle} ${rawLoc} careers apply`)}`;
+      }
 
       case 'linkedin':
         return `https://www.linkedin.com/jobs/search/?keywords=${comp}%20${role}&location=${loc}`;
 
-      case 'naukri':
-        const naukriRole = (activeRole || '').toLowerCase().replace(/[^a-z0-9]+/g, '-');
-        const naukriLoc = selectedCountry.toLowerCase().replace(/[^a-z0-9]+/g, '-');
-        return `https://www.naukri.com/${naukriRole}-jobs-in-${naukriLoc}?k=${comp}%20${role}`;
+      case 'naukri': {
+        const queryClean = encodeURIComponent(`${compRaw} ${jobTitle}`).replace(/%20/g, '-');
+        if (isIndia) {
+          const cityMatch = rawLoc.toLowerCase().match(/(bangalore|bengaluru|hyderabad|mumbai|delhi|noida|gurgaon|pune|chennai)/);
+          const city = cityMatch ? cityMatch[0] : 'india';
+          return `https://www.naukri.com/${queryClean}-jobs-in-${city}?k=${comp}%20${role}`;
+        }
+        return `https://www.naukri.com/jobs-in-india?k=${comp}%20${role}`;
+      }
 
       case 'indeed':
+        if (isIndia) {
+          return `https://in.indeed.com/jobs?q=${comp}%20${role}&l=${loc}`;
+        }
         return `https://www.indeed.com/jobs?q=${comp}%20${role}&l=${loc}`;
 
       case 'glassdoor':
+        if (isIndia) {
+          return `https://www.glassdoor.co.in/Job/india-${encodeURIComponent(jobTitle.toLowerCase()).replace(/%20/g, '-')}-jobs-SRCH_IL.0,5_IN115_KO6,${Math.min(30, 6 + jobTitle.length)}.htm?sc.keyword=${comp}%20${role}`;
+        }
         return `https://www.glassdoor.com/Job/jobs.htm?sc.keyword=${comp}%20${role}`;
 
       case 'wellfound':
@@ -193,7 +224,7 @@ export default function MappedJobs() {
         return `https://www.google.com/search?q=${comp}%20${role}%20jobs%20in%20${loc}&ibp=htl;jobs`;
 
       default:
-        return `https://www.google.com/search?q=${comp}%20${role}%20careers`;
+        return `https://www.google.com/search?q=${comp}%20${role}%20careers%20in%20${loc}`;
     }
   };
 
@@ -214,11 +245,13 @@ export default function MappedJobs() {
     setTimeout(() => setRedirectToast(null), 5000);
   };
 
+  // Calculate Match Score ONLY if user has executed an ATS scan
   const calculateJobMatch = (jobTitle) => {
+    if (!hasScanResult) return null;
     const role = activeRole.toLowerCase();
     const title = (jobTitle || '').toLowerCase();
-    if (title.includes(role)) return 92 + (title.length % 7);
-    return 80 + (title.length % 15);
+    const alignmentMultiplier = title.includes(role) ? 1.0 : 0.88;
+    return Math.min(99, Math.max(65, Math.round(candidateAtsScore * alignmentMultiplier)));
   };
 
   const handleCustomRoleSubmit = (e) => {
@@ -287,7 +320,9 @@ export default function MappedJobs() {
             </button>
           )}
         </div>
-      </div>      {/* USER PREFERENCE & SELECTION SECTIONS (EXPANDED HEIGHT-WISE WITH SKEUOMORPHISM & NO SCROLLBARS) */}
+      </div>
+
+      {/* USER PREFERENCE & SELECTION SECTIONS (EXPANDED HEIGHT-WISE WITH SKEUOMORPHISM & NO SCROLLBARS) */}
       <div className="user-preferences-panel skeuo-card no-scrollbar">
         
         {/* TARGET ROLE SELECTOR */}
@@ -352,7 +387,7 @@ export default function MappedJobs() {
           </div>
         </div>
 
-        {/* WORK MODE & CATEGORY & COMPANY FILTERS (EXPANDED VERTICALLY - NO SCROLLBARS) */}
+        {/* WORK MODE & CATEGORY & COMPANY FILTERS */}
         <div className="secondary-filters-grid" style={{ marginTop: '20px', paddingTop: '20px', borderTop: '1px solid rgba(255,255,255,0.08)' }}>
           
           <div className="preference-block">
@@ -433,7 +468,15 @@ export default function MappedJobs() {
           </span>
         </div>
         <div style={{ fontSize: '11px', color: 'var(--text-muted)', display: 'flex', alignItems: 'center', gap: '6px' }}>
-          <ShieldCheck size={14} color="#10B981" /> Direct 1-Click Apply Across 7 Major Job Platforms
+          {hasScanResult ? (
+            <span style={{ color: '#10B981', display: 'flex', alignItems: 'center', gap: '6px', fontWeight: 'bold' }}>
+              <CheckCircle size={14} color="#10B981" /> ATS MATCHING ACTIVE (Candidate Score: {candidateAtsScore}%)
+            </span>
+          ) : (
+            <span style={{ color: '#00E5FF', display: 'flex', alignItems: 'center', gap: '6px' }}>
+              <ShieldCheck size={14} color="#00E5FF" /> Upload CV in ATS Scan to enable personalized Match %
+            </span>
+          )}
         </div>
       </div>
 
@@ -474,10 +517,19 @@ export default function MappedJobs() {
                     <h3 className="job-title" title={jobTitle}>{jobTitle}</h3>
                   </div>
 
-                  <div className="match-score-pill">
-                    <span className="match-num">{matchScore}%</span>
-                    <span className="match-label">MATCH</span>
-                  </div>
+                  {/* MATCH SCORE PILL - SHOWN ONLY WHEN CV SCAN RESULT EXISTS */}
+                  {hasScanResult && matchScore !== null ? (
+                    <div className="match-score-pill">
+                      <span className="match-num">{matchScore}%</span>
+                      <span className="match-label">MATCH</span>
+                    </div>
+                  ) : (
+                    <div className="no-scan-pill" title="Upload and scan your CV in ATS Scan to calculate match %">
+                      <span style={{ fontSize: '9px', color: '#94A3B8', background: 'rgba(255,255,255,0.05)', padding: '4px 8px', borderRadius: '6px', border: '1px dashed rgba(255,255,255,0.15)', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+                        CV NOT SCANNED
+                      </span>
+                    </div>
+                  )}
                 </div>
 
                 <div className="job-tags-row">
@@ -486,7 +538,7 @@ export default function MappedJobs() {
                 </div>
 
                 <p className="job-desc">
-                  {job.description || `Key strategic hiring priority at ${companyName}. High alignment detected based on your analyzed resume skills.`}
+                  {job.description || `Key strategic hiring priority at ${companyName}. ${hasScanResult ? 'High alignment detected based on your analyzed resume skills.' : 'Verified opening available on official career platforms.'}`}
                 </p>
 
                 {/* PRIMARY OFFICIAL CAREER SITE BUTTON */}
