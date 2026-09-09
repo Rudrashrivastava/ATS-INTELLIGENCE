@@ -131,7 +131,7 @@ export default function Dashboard() {
           <button 
             onClick={() => navigate('/mapped-jobs')}
             className="btn-glow flex-center"
-            style={{ padding: '12px 20px', borderRadius: '10px', gap: '8px', fontSize: '12px', fontWeight: 'bold', background: 'rgba(139, 92, 246, 0.2)', border: '1px solid #8B5CF6', color: '#fff' }}
+            style={{cursor:'pointer', padding: '12px 20px', borderRadius: '10px', gap: '8px', fontSize: '12px', fontWeight: 'bold', background: 'rgba(139, 92, 246, 0.2)', border: '1px solid #8B5CF6', color: '#fff' }}
           >
             <Building size={16} color="#8B5CF6" /> EXPLORE 30+ JOBS
           </button>
@@ -139,7 +139,7 @@ export default function Dashboard() {
           <button 
             onClick={() => navigate('/analyzer')}
             className="btn-glow flex-center"
-            style={{ padding: '12px 24px', borderRadius: '10px', gap: '8px', fontSize: '12px', fontWeight: 'bold' }}
+            style={{ cursor:'pointer',padding: '12px 24px', borderRadius: '10px', gap: '8px', fontSize: '12px', fontWeight: 'bold' }}
           >
             <Zap size={16} /> NEW ATS SCAN
           </button>
