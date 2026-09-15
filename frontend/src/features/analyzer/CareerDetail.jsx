@@ -466,6 +466,12 @@ export default function CareerDetail() {
           border-radius: 10px;
           border: 1px solid rgba(255, 255, 255, 0.05);
         }
+
+        @media (max-width: 900px) {
+          .cv-view-grid { grid-template-columns: 1fr; }
+          .cv-meta-column { padding: 16px; }
+          .tab-toggle-btn { padding: 10px 16px; font-size: 11px; }
+        }
       `}} />
     </div>
   );

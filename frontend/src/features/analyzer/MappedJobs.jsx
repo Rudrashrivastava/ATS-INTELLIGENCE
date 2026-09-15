@@ -917,6 +917,20 @@ export default function MappedJobs() {
           gap: 16px;
           opacity: 0.85;
         }
+
+        @media (max-width: 900px) {
+          .jobs-header { flex-direction: column; align-items: flex-start; gap: 16px; padding: 16px; }
+          .header-left { flex-direction: row; gap: 12px; }
+          .header-title { font-size: 18px; }
+          .search-bar { width: 100%; box-sizing: border-box; }
+          .jobs-grid { grid-template-columns: 1fr !important; }
+        }
+
+        @media (max-width: 480px) {
+          .mapped-jobs-container { padding: 12px 6px; }
+          .user-preferences-panel { padding: 14px 10px; }
+          .platform-buttons-grid { grid-template-columns: repeat(2, 1fr); }
+        }
       `}} />
     </div>
   );
