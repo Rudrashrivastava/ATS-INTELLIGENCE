@@ -63,9 +63,20 @@ public class ATSScoreService {
 
     private ATSScore callAgent(String url, String key, String model, String resumeText, String jobDescription) throws Exception {
         long startTime = System.currentTimeMillis();
+        
+        // Truncate resume and job description to stay well within API payload limits (prevent HTTP 413)
+        String safeResume = resumeText != null ? resumeText.trim() : "";
+        if (safeResume.length() > 12000) {
+            safeResume = safeResume.substring(0, 12000) + "\n[Resume text truncated for AI processing]";
+        }
+        String safeJob = jobDescription != null ? jobDescription.trim() : "";
+        if (safeJob.length() > 6000) {
+            safeJob = safeJob.substring(0, 6000) + "\n[Job description truncated for AI processing]";
+        }
+
         String prompt = "Act as an advanced ATS Intelligence Agent. Analyze this resume against the job description.\n" +
-                "RESUME: " + resumeText + "\n" +
-                "JOB: " + jobDescription + "\n\n" +
+                "RESUME: " + safeResume + "\n" +
+                "JOB: " + safeJob + "\n\n" +
                 "Return ONLY a raw JSON object with these EXACT keys:\n" +
                 "score (0-100 integer), recommendation (2-3 sentences), strengths (array of 4 strings), " +
                 "weaknesses (array of 4 strings), categoryScores (object with: Skills, Formatting, Keywords, Experience as integers), " +

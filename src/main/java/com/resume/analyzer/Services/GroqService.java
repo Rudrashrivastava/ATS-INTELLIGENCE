@@ -6,6 +6,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.*;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.HttpStatusCodeException;
 import org.springframework.web.client.RestTemplate;
 
 import java.util.*;
@@ -24,35 +25,55 @@ public class GroqService {
     @Value("${groq.base-url:https://api.groq.com/openai/v1/chat/completions}")
     private String baseUrl;
 
-    @Value("${groq.model}")
+    @Value("${groq.model:llama-3.1-8b-instant}")
     private String model;
 
     public String getChatResponse(String userQuery, Map<String, Object> context) {
         try {
-            String systemPrompt = "You are the ATS Intelligence Assistant (Powered by Groq). " +
+            // Safety sanitization: Truncate oversized user input
+            String safeQuery = userQuery != null ? userQuery.trim() : "";
+            if (safeQuery.length() > 2500) {
+                safeQuery = safeQuery.substring(0, 2500) + "... [Truncated due to payload length]";
+            }
+
+            // Safety sanitization: Build compact context
+            StringBuilder systemPrompt = new StringBuilder("You are the ATS Intelligence Assistant (Powered by Groq). " +
                     "PROJECT MANUAL: " +
                     "1. ANALYZER: Upload a PDF resume to get an AI score and roadmap. " +
                     "2. DASHBOARD: View your history, global stats, and career trajectories. " +
                     "3. DETAILS: See a 6-step roadmap and job alignment strategy. " +
                     "MISTRAL MODEL: Performs the ATS scoring. " +
                     "GROQ MODEL: Powers this real-time assistant chat. " +
-                    "ALWAYS provide professional, concise advice without markdown tags like **. ";
+                    "ALWAYS provide professional, concise advice without markdown tags like **. ");
 
             if (context != null) {
-                systemPrompt += "RESUME CONTEXT: Target Role: " + context.get("role") + ". " +
-                        "ATS Score: " + context.get("score") + "%. " +
-                        "AI Advice: " + context.get("recommendation") + ". ";
+                String role = String.valueOf(context.getOrDefault("role", "Candidate"));
+                if (role.length() > 100) role = role.substring(0, 100);
+
+                Object scoreObj = context.getOrDefault("score", 0);
+
+                systemPrompt.append("RESUME CONTEXT: Target Role: ").append(role).append(". ")
+                            .append("ATS Score: ").append(scoreObj).append("%. ");
+
+                if (context.containsKey("recommendation") && context.get("recommendation") != null) {
+                    String rec = String.valueOf(context.get("recommendation"));
+                    if (rec.length() > 250) rec = rec.substring(0, 250);
+                    systemPrompt.append("AI Advice: ").append(rec).append(". ");
+                }
             }
 
             HttpHeaders headers = new HttpHeaders();
             headers.setContentType(MediaType.APPLICATION_JSON);
-            headers.set("Authorization", "Bearer " + apiKey);
+            headers.set("Authorization", "Bearer " + (apiKey != null ? apiKey.trim() : ""));
+
+            String safeModel = (model == null || model.isBlank() || model.contains("compound-mini")) 
+                    ? "llama-3.1-8b-instant" : model.trim();
 
             Map<String, Object> body = new HashMap<>();
-            body.put("model", model);
+            body.put("model", safeModel);
             body.put("messages", List.of(
-                Map.of("role", "system", "content", systemPrompt),
-                Map.of("role", "user", "content", userQuery)
+                Map.of("role", "system", "content", systemPrompt.toString()),
+                Map.of("role", "user", "content", safeQuery)
             ));
 
             HttpEntity<Map<String, Object>> entity = new HttpEntity<>(body, headers);
@@ -63,9 +84,16 @@ public class GroqService {
             Map<String, Object> message = (Map<String, Object>) choices.get(0).get("message");
             
             return ((String) message.get("content")).replaceAll("\\*\\*", "");
+        } catch (HttpStatusCodeException e) {
+            log.error("Groq HTTP Error [Status {}]: {}", e.getStatusCode(), e.getResponseBodyAsString());
+            if (e.getStatusCode() == HttpStatus.PAYLOAD_TOO_LARGE || e.getRawStatusCode() == 413) {
+                return "Neural Assistant Notice: Your message or context was too large for processing. Please shorten your prompt and try again.";
+            }
+            return "Neural Link Error (Groq " + e.getStatusCode().value() + "): Unable to process query at this time.";
         } catch (Exception e) {
             log.error("Groq Failure", e);
             return "Neural Link Error (Groq): " + e.getMessage();
         }
     }
 }
+

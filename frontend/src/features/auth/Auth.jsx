@@ -53,7 +53,7 @@ export default function Auth() {
     if (isLogin) {
       const ok = await login({ email: formData.email, password: formData.password });
       if (ok) {
-        navigate('/', { replace: true });
+        navigate('/dashboard', { replace: true });
       }
     } else {
       const ok = await register(formData);
@@ -318,5 +318,3 @@ export default function Auth() {
     </div>
   );
 }
-
-
