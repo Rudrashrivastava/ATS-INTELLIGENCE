@@ -940,11 +940,56 @@ export default function MappedJobs() {
           .jobs-grid { grid-template-columns: 1fr !important; }
         }
 
-        @media (max-width: 540px) {
-          .mapped-jobs-container { padding: 12px 8px; }
-          .user-preferences-panel { padding: 14px 10px; }
-          .platform-buttons-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-          .btn-primary-apply { font-size: 10.5px; padding: 10px 8px; }
+        @media (max-width: 640px) {
+          .mapped-jobs-container { padding: 10px 8px; gap: 12px; }
+          .jobs-header { padding: 12px 14px; gap: 10px; }
+          .header-title { font-size: 16px; }
+          .header-sub { font-size: 11px; }
+          .user-preferences-panel { padding: 12px 10px; gap: 10px; }
+          .openings-summary-banner { padding: 10px 14px; flex-direction: column; align-items: flex-start; gap: 6px; }
+          
+          .job-card { 
+            padding: 14px 12px !important; 
+            gap: 10px !important; 
+            border-radius: 12px;
+          }
+          .company-logo-avatar { 
+            width: 36px !important; 
+            height: 36px !important; 
+            font-size: 16px !important; 
+            border-radius: 8px !important; 
+          }
+          .job-title { font-size: 14px !important; }
+          .company-name { font-size: 10px !important; }
+          .match-num { font-size: 16px !important; }
+          .match-label { font-size: 7px !important; }
+          
+          .job-tags-row { gap: 6px; }
+          .tag-pill { padding: 3px 7px !important; font-size: 10px !important; }
+          
+          .job-desc { 
+            font-size: 11px !important; 
+            height: 32px !important; 
+            line-height: 1.4 !important;
+          }
+          
+          .btn-primary-apply { 
+            font-size: 10px !important; 
+            padding: 8px 8px !important; 
+            border-radius: 8px !important;
+          }
+          
+          .platforms-toolbar { padding-top: 8px !important; gap: 6px !important; }
+          .platforms-label { font-size: 8.5px !important; }
+          .platform-buttons-grid { 
+            grid-template-columns: repeat(3, minmax(0, 1fr)) !important; 
+            gap: 4px !important; 
+          }
+          .platform-btn { 
+            padding: 5px 4px !important; 
+            font-size: 9px !important; 
+            border-radius: 6px !important;
+          }
         }
       `}} />
     </div>
