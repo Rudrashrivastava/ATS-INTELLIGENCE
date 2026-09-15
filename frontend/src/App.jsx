@@ -84,36 +84,36 @@ function AppContent() {
           display: 'flex', alignItems: 'center', justifyContent: 'space-between',
           padding: '0 32px'
         }}>
-          <Link to="/dashboard" className="nav-brand" style={{textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '12px'}}>
-            <img src="/favicon.svg" alt="ApplySphere AI Logo" style={{ width: '32px', height: '32px', filter: 'drop-shadow(0 0 10px rgba(0, 240, 255, 0.7))' }} />
-            <span style={{color: '#00F0FF', fontWeight: 'bold', fontSize: '18px', letterSpacing: '1.5px', fontFamily: "'Instrument Serif', serif"}}>APPLYSPHERE AI</span>
+          <Link to="/dashboard" className="nav-brand" style={{textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '10px', flexShrink: 0}}>
+            <img src="/favicon.svg" alt="ApplySphere AI Logo" style={{ width: '30px', height: '30px', filter: 'drop-shadow(0 0 10px rgba(0, 240, 255, 0.7))' }} />
+            <span className="nav-brand-text" style={{color: '#00F0FF', fontWeight: 'bold', fontSize: '18px', letterSpacing: '1.5px', fontFamily: "'Instrument Serif', serif", whiteSpace: 'nowrap'}}>APPLYSPHERE AI</span>
           </Link>
           
-          <div style={{display: 'flex', gap: '24px', alignItems: 'center'}}>
-            <Link to="/dashboard" className="nav-link-neural">
+          <div className="nav-menu-right" style={{display: 'flex', gap: '16px', alignItems: 'center'}}>
+            <Link to="/dashboard" className="nav-link-neural" title="Dashboard">
               <LayoutDashboard size={16} />
-              DASHBOARD
+              <span className="nav-link-text">DASHBOARD</span>
             </Link>
             
-            <Link to="/analyzer" className="nav-link-neural">
+            <Link to="/analyzer" className="nav-link-neural" title="ATS Scan">
               <Search size={16} />
-              ATS SCAN
+              <span className="nav-link-text">ATS SCAN</span>
             </Link>
 
-            <Link to="/mapped-jobs" className="nav-link-neural" style={{ color: '#00F0FF' }}>
+            <Link to="/mapped-jobs" className="nav-link-neural" style={{ color: '#00F0FF' }} title="Job Market">
               <Zap size={16} color="#00F0FF" />
-              JOB MARKET (30+)
+              <span className="nav-link-text">JOB MARKET</span>
             </Link>
 
-            <div style={{height: '24px', width: '1px', background: 'rgba(255,255,255,0.1)'}}></div>
+            <div className="nav-divider" style={{height: '24px', width: '1px', background: 'rgba(255,255,255,0.1)'}}></div>
             
-            <div style={{display: 'flex', alignItems: 'center', gap: '16px'}}>
+            <div style={{display: 'flex', alignItems: 'center', gap: '12px'}}>
               
               {/* IN-PLATFORM RECRUITER OUTREACH NOTIFICATION BELL */}
               <NotificationCenter />
 
-              <div style={{textAlign: 'right'}}>
-                <div style={{fontSize: '12px', fontWeight: 'bold', color: '#fff', textTransform: 'uppercase', display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: '8px'}}>
+              <div className="user-profile-summary" style={{textAlign: 'right'}}>
+                <div style={{fontSize: '12px', fontWeight: 'bold', color: '#fff', textTransform: 'uppercase', display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: '6px'}}>
                   <span>{user?.name || user?.email?.split('@')[0] || 'OPERATOR'}</span>
                   <span style={{
                     fontSize: '9px',
@@ -125,24 +125,25 @@ function AppContent() {
                     fontWeight: 'bold',
                     letterSpacing: '1px'
                   }}>
-                    {user?.role === 'HR' || user?.role === 'RECRUITER' ? 'HR RECRUITER' : 'CANDIDATE'}
+                    {user?.role === 'HR' || user?.role === 'RECRUITER' ? 'HR' : 'USER'}
                   </span>
                 </div>
-                <div style={{fontSize: '9px', color: '#00F0FF', letterSpacing: '2px', fontFamily: "'JetBrains Mono', monospace"}}>NEURAL IDENTITY</div>
               </div>
               
               <button 
                 onClick={handleLogout}
                 style={{
                   background: 'rgba(255, 46, 84, 0.1)', border: '1px solid #FF2E54',
-                  color: '#FF2E54', padding: '7px 14px', borderRadius: '9999px', cursor: 'pointer',
-                  display: 'flex', alignItems: 'center', gap: '8px', fontSize: '11px',
-                  fontWeight: 'bold', letterSpacing: '1px', transition: 'all 0.3s ease'
+                  color: '#FF2E54', padding: '6px 12px', borderRadius: '9999px', cursor: 'pointer',
+                  display: 'flex', alignItems: 'center', gap: '6px', fontSize: '11px',
+                  fontWeight: 'bold', letterSpacing: '1px', transition: 'all 0.3s ease',
+                  whiteSpace: 'nowrap', flexShrink: 0
                 }}
                 className="logout-btn-neural"
+                title="Logout"
               >
                 <LogOut size={14} />
-                LOGOUT
+                <span className="logout-text">LOGOUT</span>
               </button>
             </div>
           </div>
@@ -187,16 +188,34 @@ function AppContent() {
           text-decoration: none; 
           display: flex; 
           align-items: center; 
-          gap: 8px; 
+          gap: 6px; 
           font-size: 11px; 
           font-weight: 700;
           letter-spacing: 1.5px;
           transition: all 0.25s ease;
+          white-space: nowrap;
         }
         .nav-link-neural:hover { color: #00F0FF; transform: translateY(-1px); }
         .logout-btn-neural:hover { background: #FF2E54 !important; color: #FFF !important; box-shadow: 0 0 15px rgba(255, 46, 84, 0.4); }
         .pulse-slow { animation: pulse 3s infinite ease-in-out; }
         @keyframes pulse { 0%, 100% { opacity: 0.4; transform: scale(0.95); } 50% { opacity: 1; transform: scale(1.05); } }
+
+        @media (max-width: 900px) {
+          .global-navbar { padding: 0 16px !important; height: 60px !important; }
+          .app-container { padding-top: 75px !important; padding-left: 16px !important; padding-right: 16px !important; }
+          .nav-link-text { display: none; }
+          .nav-brand-text { font-size: 15px !important; }
+          .nav-menu-right { gap: 10px !important; }
+          .user-profile-summary { display: none; }
+          .nav-divider { display: none; }
+        }
+
+        @media (max-width: 480px) {
+          .global-navbar { padding: 0 10px !important; }
+          .nav-brand-text { display: none; }
+          .app-container { padding-top: 70px !important; padding-left: 8px !important; padding-right: 8px !important; }
+          .logout-text { display: none; }
+        }
       `}} />
     </div>
   );

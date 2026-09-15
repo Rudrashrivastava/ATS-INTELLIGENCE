@@ -724,11 +724,22 @@ export default function Dashboard() {
         @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
         @keyframes pulseGlow { 0% { box-shadow: 0 0 0 0 rgba(0, 229, 255, 0.4); } 70% { box-shadow: 0 0 0 15px rgba(0, 229, 255, 0); } 100% { box-shadow: 0 0 0 0 rgba(0, 229, 255, 0); } }
 
-        @media (max-width: 1024px) {
+        @media (max-width: 900px) {
           .kpi-grid { grid-template-columns: repeat(2, 1fr); }
           .dashboard-content-grid { grid-template-columns: 1fr; }
+          .cyber-header { flex-direction: column; align-items: flex-start; gap: 16px; padding: 18px 20px; }
+          .header-actions { width: 100%; justify-content: flex-start; flex-wrap: wrap; }
+          .header-title { font-size: 18px; }
         }
-      `}} />
+
+        @media (max-width: 480px) {
+          .compact-dashboard { padding: 12px 8px; }
+          .kpi-grid { grid-template-columns: 1fr; }
+          .header-actions { flex-direction: column; width: 100%; }
+          .header-actions button { width: 100%; justify-content: center; }
+          .main-section, .sidebar-section { padding: 16px 12px; }
+        }
+      ` }} />
     </div>
   );
 }
