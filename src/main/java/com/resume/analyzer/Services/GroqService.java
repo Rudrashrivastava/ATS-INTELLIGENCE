@@ -77,7 +77,9 @@ public class GroqService {
             ));
 
             HttpEntity<Map<String, Object>> entity = new HttpEntity<>(body, headers);
-            ResponseEntity<String> response = restTemplate.postForEntity(baseUrl, entity, String.class);
+            String targetUrl = resolveFullUrl(baseUrl);
+            log.info("Sending Groq Chat Request to: {}", targetUrl);
+            ResponseEntity<String> response = restTemplate.postForEntity(targetUrl, entity, String.class);
 
             Map<String, Object> responseBody = objectMapper.readValue(response.getBody(), Map.class);
             List<Map<String, Object>> choices = (List<Map<String, Object>>) responseBody.get("choices");
@@ -94,6 +96,23 @@ public class GroqService {
             log.error("Groq Failure", e);
             return "Neural Link Error (Groq): " + e.getMessage();
         }
+    }
+
+    private String resolveFullUrl(String inputUrl) {
+        if (inputUrl == null || inputUrl.isBlank()) {
+            return "https://api.groq.com/openai/v1/chat/completions";
+        }
+        String u = inputUrl.trim();
+        if (u.endsWith("/chat/completions")) {
+            return u;
+        }
+        if (u.endsWith("/")) {
+            u = u.substring(0, u.length() - 1);
+        }
+        if (u.endsWith("/openai/v1") || u.endsWith("/v1")) {
+            return u + "/chat/completions";
+        }
+        return u + "/v1/chat/completions";
     }
 }
 

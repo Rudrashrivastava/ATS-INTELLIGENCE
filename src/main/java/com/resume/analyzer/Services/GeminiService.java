@@ -59,7 +59,8 @@ public class GeminiService { // Name kept for compatibility, logic is GROQ
             ));
 
             HttpEntity<Map<String, Object>> entity = new HttpEntity<>(body, headers);
-            ResponseEntity<String> response = restTemplate.postForEntity(baseUrl, entity, String.class);
+            String targetUrl = resolveFullUrl(baseUrl);
+            ResponseEntity<String> response = restTemplate.postForEntity(targetUrl, entity, String.class);
 
             Map<String, Object> responseBody = objectMapper.readValue(response.getBody(), Map.class);
             List<Map<String, Object>> choices = (List<Map<String, Object>>) responseBody.get("choices");
@@ -71,6 +72,23 @@ public class GeminiService { // Name kept for compatibility, logic is GROQ
             log.error("Groq Assistant Failure", e);
             return "Neural Link Error: " + e.getMessage();
         }
+    }
+
+    private String resolveFullUrl(String inputUrl) {
+        if (inputUrl == null || inputUrl.isBlank()) {
+            return "https://api.groq.com/openai/v1/chat/completions";
+        }
+        String u = inputUrl.trim();
+        if (u.endsWith("/chat/completions")) {
+            return u;
+        }
+        if (u.endsWith("/")) {
+            u = u.substring(0, u.length() - 1);
+        }
+        if (u.endsWith("/openai/v1") || u.endsWith("/v1")) {
+            return u + "/chat/completions";
+        }
+        return u + "/v1/chat/completions";
     }
 
     // Overload for backward compatibility
