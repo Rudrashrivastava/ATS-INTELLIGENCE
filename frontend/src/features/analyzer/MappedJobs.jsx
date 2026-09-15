@@ -871,9 +871,9 @@ export default function MappedJobs() {
 
         .btn-primary-apply {
           width: 100%;
-          padding: 12px 16px;
+          padding: 10px 14px;
           border-radius: 10px;
-          font-size: 11.5px;
+          font-size: 11px;
           font-weight: bold;
           cursor: pointer;
           display: flex;
@@ -881,6 +881,11 @@ export default function MappedJobs() {
           justify-content: center;
           gap: 6px;
           color: #00F0FF;
+          text-align: center;
+          box-sizing: border-box;
+          white-space: nowrap;
+          overflow: hidden;
+          text-overflow: ellipsis;
         }
 
         .platforms-toolbar {
@@ -889,15 +894,19 @@ export default function MappedJobs() {
           gap: 8px;
           padding-top: 12px;
           border-top: 1px solid rgba(255, 255, 255, 0.08);
+          width: 100%;
+          box-sizing: border-box;
         }
         .platforms-label { font-size: 9px; font-weight: bold; color: #8B5CF6; letter-spacing: 1px; display: flex; align-items: center; gap: 4px; }
         .platform-buttons-grid {
           display: grid;
-          grid-template-columns: repeat(3, 1fr);
+          grid-template-columns: repeat(3, minmax(0, 1fr));
           gap: 6px;
+          width: 100%;
+          box-sizing: border-box;
         }
         .platform-btn {
-          padding: 7px 10px;
+          padding: 7px 6px;
           border-radius: 8px;
           font-size: 10px;
           font-weight: 600;
@@ -906,6 +915,11 @@ export default function MappedJobs() {
           align-items: center;
           justify-content: center;
           gap: 4px;
+          white-space: nowrap;
+          overflow: hidden;
+          text-overflow: ellipsis;
+          width: 100%;
+          box-sizing: border-box;
         }
 
         .loading-state, .empty-jobs {
@@ -926,10 +940,11 @@ export default function MappedJobs() {
           .jobs-grid { grid-template-columns: 1fr !important; }
         }
 
-        @media (max-width: 480px) {
-          .mapped-jobs-container { padding: 12px 6px; }
+        @media (max-width: 540px) {
+          .mapped-jobs-container { padding: 12px 8px; }
           .user-preferences-panel { padding: 14px 10px; }
-          .platform-buttons-grid { grid-template-columns: repeat(2, 1fr); }
+          .platform-buttons-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+          .btn-primary-apply { font-size: 10.5px; padding: 10px 8px; }
         }
       `}} />
     </div>

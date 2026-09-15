@@ -94,18 +94,37 @@ public class AIJobSearchService {
         body.put("temperature", 0.2);
 
         HttpEntity<Map<String, Object>> entity = new HttpEntity<>(body, headers);
-        ResponseEntity<String> response = restTemplate.postForEntity(url, entity, String.class);
+        String targetUrl = resolveFullUrl(url);
+        ResponseEntity<String> response = restTemplate.postForEntity(targetUrl, entity, String.class);
 
         JsonNode root = objectMapper.readTree(response.getBody());
         String content = root.path("choices").get(0).path("message").path("content").asText();
-
+        
+        // Clean JSON markdown
         int start = content.indexOf("[");
         int end = content.lastIndexOf("]");
         if (start != -1 && end != -1) {
             content = content.substring(start, end + 1);
         }
-
+        
         return objectMapper.readValue(content, new TypeReference<List<Map<String, Object>>>() {});
+    }
+
+    private String resolveFullUrl(String inputUrl) {
+        if (inputUrl == null || inputUrl.isBlank()) {
+            return "https://api.groq.com/openai/v1/chat/completions";
+        }
+        String u = inputUrl.trim();
+        if (u.endsWith("/chat/completions")) {
+            return u;
+        }
+        if (u.endsWith("/")) {
+            u = u.substring(0, u.length() - 1);
+        }
+        if (u.endsWith("/openai/v1") || u.endsWith("/v1")) {
+            return u + "/chat/completions";
+        }
+        return u + "/v1/chat/completions";
     }
 
     private List<Map<String, Object>> generateDynamicFallback(String query, String location) {
